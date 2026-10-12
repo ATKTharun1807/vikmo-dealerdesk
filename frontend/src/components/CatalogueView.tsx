@@ -21,16 +21,19 @@ import { Product, SupplierSyncResult, UserRole, Order } from '../types';
 import { ApiService } from '../api';
 
 interface CatalogueViewProps {
-  onAddToCart: (product: Product, quantity: number) => void;
+  onAddToCart?: (product: Product, quantity: number) => void;
   showToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
+  mode?: 'catalogue' | 'warehouse';
   userRole?: UserRole;
 }
 
 export const CatalogueView: React.FC<CatalogueViewProps> = ({
   onAddToCart,
   showToast,
-  userRole = 'dealer',
+  mode = 'catalogue',
+  userRole,
 }) => {
+  const isWarehouseMode = mode === 'warehouse' || userRole === 'warehouse';
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -73,7 +76,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
       setLoading(true);
       const res = await ApiService.getProducts({
         page,
-        page_size: userRole === 'warehouse' ? 12 : 24,
+        page_size: isWarehouseMode ? 12 : 24,
         search: search || undefined,
         category: category && category !== 'All' ? category : undefined,
         vehicle: vehicle || undefined,
@@ -88,7 +91,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
   };
 
   const fetchWarehouseOrders = async () => {
-    if (userRole !== 'warehouse') return;
+    if (!isWarehouseMode) return;
     try {
       const res = await ApiService.getOrders({ page_size: 20 });
       setWhOrders(res.results);
@@ -100,11 +103,11 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
       fetchProducts();
     }, 200);
     return () => clearTimeout(timer);
-  }, [search, category, vehicle, page, userRole]);
+  }, [search, category, vehicle, page, isWarehouseMode]);
 
   useEffect(() => {
     fetchWarehouseOrders();
-  }, [userRole]);
+  }, [isWarehouseMode]);
 
   // Pagination helper
   const getPageNumbers = (current: number, total: number) => {
@@ -205,7 +208,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
   // =========================================================================
   // 1. WAREHOUSE VIEW (Exact Dashboard from User's Screenshot)
   // =========================================================================
-  if (userRole === 'warehouse') {
+  if (isWarehouseMode) {
     const lowStockCount = products.filter((p) => p.stock > 0 && p.stock <= 10).length;
     const toDispatchCount = whOrders.filter((o) => o.status === 'CONFIRMED').length;
     const reorderNowCount = products.filter((p) => p.stock === 0).length;
@@ -724,9 +727,28 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
             return (
               <div key={p.sku} className="card">
                 <div>
-                  {/* Card Top: SKU & Stock Badge */}
+                  {/* Card Top: SKU, Audit & Stock Badge */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <span className="sku">{p.sku}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="sku">{p.sku}</span>
+                      <button
+                        onClick={() => {
+                          setAdjustModalProduct(p);
+                          setAdjustQty(p.stock);
+                        }}
+                        title="Audit / Adjust Warehouse Stock"
+                        style={{
+                          fontSize: '10.5px',
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          background: 'var(--surface-2)',
+                          color: 'var(--text-muted)',
+                          border: '1px solid var(--border-subtle)',
+                        }}
+                      >
+                        Audit
+                      </button>
+                    </div>
                     <span className={`badge ${badgeClass}`}>{badgeText}</span>
                   </div>
 

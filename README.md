@@ -26,6 +26,15 @@ A production-grade distributed ordering backend, inventory management engine, an
   - All-or-nothing rollback: returns `502 SUPPLIER_UNAVAILABLE` without corrupting local database state if any page fails.
   - Duplicate SKU resolution keeping the record with the latest `updated_at`.
   - Catalogue isolation: local inventory is never overwritten with supplier warehouse quantities.
+- **Part C · Dealer AI Assistant (Optional Bonus)**:
+  - Natural language part search and live database grounding via LLM tool calling (`search_parts`, `check_stock`, `create_draft_order`).
+  - Session memory persistence with prompt-injection guardrails against untrusted supplier descriptions.
+- **Part D · Demand Forecast & Safety Stock Reorder (Optional Bonus)**:
+  - 4-week demand forecast generated for 40 SKUs committed in `ml/forecast.csv` (160 rows).
+  - Safety stock formula endpoint `GET /api/reorder-suggestions/` implementing $SS = \lceil 1.65 \times \sigma \times \sqrt{L} \rceil$ and $ROP = LTD + SS$.
+- **Part E · Full-Width React Frontend (Optional Bonus)**:
+  - Unified Distributor Console built with React 19 + TypeScript and custom Anthropic dark design system.
+  - Complete catalogue pagination (all 612 parts), live stock audits, order fulfillment, and forecast visualization.
 
 ---
 

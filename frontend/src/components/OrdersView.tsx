@@ -110,13 +110,11 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         marginBottom: '14px',
       }}>
         <div>
-          <div style={{ fontSize: '18px', fontWeight: 500 }}>
-            {userRole === 'warehouse' ? 'Dispatch desk' : 'Orders and GST invoices'}
+          <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            Orders and GST invoices
           </div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '2px' }}>
-            {userRole === 'warehouse'
-              ? 'Central distribution fulfillment: inspect orders, dispatch shipments, and track deliveries.'
-              : 'Auditable order history, live fulfillment tracking, and itemized 18% GST tax invoices.'}
+          <div style={{ color: 'var(--text-secondary)', fontSize: '12.5px', marginTop: '2px' }}>
+            Distributor Fulfillment Console: Review dealer draft orders, confirm stock allocations, dispatch shipments, and track deliveries.
           </div>
         </div>
 
@@ -432,44 +430,26 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
               {currentOrder.status === 'CONFIRMED' && (
                 <>
-                  {userRole === 'warehouse' ? (
-                    <button
-                      onClick={() => handleAction('dispatch')}
-                      disabled={actionLoading}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        backgroundColor: '#3b82f6',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '10px 18px',
-                        borderRadius: '8px',
-                        fontWeight: 700,
-                        fontSize: '0.88rem',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Truck size={16} />
-                      <span>Dispatch Order</span>
-                    </button>
-                  ) : (
-                    <div style={{
+                  <button
+                    onClick={() => handleAction('dispatch')}
+                    disabled={actionLoading}
+                    style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                      color: '#60a5fa',
-                      border: '1px solid rgba(59, 130, 246, 0.3)',
-                      padding: '8px 14px',
+                      backgroundColor: '#3b82f6',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '10px 18px',
                       borderRadius: '8px',
-                      fontSize: '0.85rem',
-                      fontWeight: 600,
-                    }}>
-                      <Clock size={16} />
-                      <span>Awaiting Warehouse Dispatch</span>
-                    </div>
-                  )}
+                      fontWeight: 700,
+                      fontSize: '0.88rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Truck size={16} />
+                    <span>Dispatch Shipment</span>
+                  </button>
                   <button
                     onClick={() => handleAction('cancel')}
                     disabled={actionLoading}
@@ -494,44 +474,26 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
               )}
 
               {currentOrder.status === 'DISPATCHED' && (
-                userRole === 'warehouse' ? (
-                  <button
-                    onClick={() => handleAction('deliver')}
-                    disabled={actionLoading}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      backgroundColor: '#10b981',
-                      color: '#000',
-                      border: 'none',
-                      padding: '10px 18px',
-                      borderRadius: '8px',
-                      fontWeight: 700,
-                      fontSize: '0.88rem',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <CheckCheck size={16} />
-                    <span>Mark as Delivered</span>
-                  </button>
-                ) : (
-                  <div style={{
+                <button
+                  onClick={() => handleAction('deliver')}
+                  disabled={actionLoading}
+                  style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                    color: '#34d399',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    padding: '8px 14px',
+                    backgroundColor: '#10b981',
+                    color: '#000',
+                    border: 'none',
+                    padding: '10px 18px',
                     borderRadius: '8px',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                  }}>
-                    <Truck size={16} />
-                    <span>Dispatched · In Transit to Workshop</span>
-                  </div>
-                )
+                    fontWeight: 700,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <CheckCheck size={16} />
+                  <span>Mark as Delivered</span>
+                </button>
               )}
 
               {(currentOrder.status === 'DELIVERED' || currentOrder.status === 'CANCELLED') && (

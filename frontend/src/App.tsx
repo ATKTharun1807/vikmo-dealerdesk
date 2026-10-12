@@ -5,7 +5,7 @@ import { CartCheckoutView } from './components/CartCheckoutView';
 import { OrdersView } from './components/OrdersView';
 import { AssistantChatView } from './components/AssistantChatView';
 import { ReorderForecastView } from './components/ReorderForecastView';
-import { CartItem, Dealer, Order, Product, UserRole } from './types';
+import { CartItem, Dealer, Order, Product } from './types';
 import { ApiService } from './api';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 
@@ -16,7 +16,6 @@ interface Toast {
 }
 
 export function App() {
-  const [userRole, setUserRole] = useState<UserRole>('dealer');
   const [activeTab, setActiveTab] = useState<string>('catalogue');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [dealers, setDealers] = useState<Dealer[]>([]);
@@ -120,33 +119,19 @@ export function App() {
           setSelectedDealerId={setSelectedDealerId}
           apiHealthy={apiHealthy}
           onOpenCart={() => setActiveTab('cart')}
-          userRole={userRole}
-          setUserRole={(newRole) => {
-            setUserRole(newRole);
-            if (newRole === 'warehouse') {
-              if (activeTab === 'cart') {
-                setActiveTab('catalogue');
-              }
-            } else if (newRole === 'dealer') {
-              if (activeTab === 'reorder') {
-                setActiveTab('catalogue');
-              }
-            }
-          }}
         />
 
         {/* Main View Body */}
         <main className="body">
           {activeTab === 'catalogue' && (
             <CatalogueView
-              key={`catalogue-${userRole}`}
+              mode="catalogue"
               onAddToCart={handleAddToCart}
               showToast={showToast}
-              userRole={userRole}
             />
           )}
 
-          {activeTab === 'cart' && userRole === 'dealer' && (
+          {activeTab === 'cart' && (
             <CartCheckoutView
               cart={cart}
               onUpdateQty={handleUpdateQty}
@@ -163,12 +148,21 @@ export function App() {
 
           {activeTab === 'orders' && (
             <OrdersView
-              key={`orders-${userRole}`}
               selectedOrderNumber={selectedOrderNumber}
               showToast={showToast}
-              userRole={userRole}
               activeDealerId={selectedDealerId}
             />
+          )}
+
+          {activeTab === 'warehouse' && (
+            <CatalogueView
+              mode="warehouse"
+              showToast={showToast}
+            />
+          )}
+
+          {activeTab === 'reorder' && (
+            <ReorderForecastView showToast={showToast} />
           )}
 
           {activeTab === 'assistant' && (
@@ -177,10 +171,6 @@ export function App() {
               onViewOrder={handleViewOrder}
               showToast={showToast}
             />
-          )}
-
-          {activeTab === 'reorder' && (
-            <ReorderForecastView showToast={showToast} />
           )}
         </main>
       </div>
