@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import {
   Search,
-  Filter,
-  Plus,
-  Minus,
+  Car,
   ShoppingCart,
   RefreshCw,
+  Plus,
+  Minus,
   Edit3,
+  Boxes,
+  Truck,
   CheckCircle,
   AlertTriangle,
-  Info,
-  Car,
-  Tag,
-  Boxes,
+  Package,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react';
-import { Product, SupplierSyncResult, UserRole } from '../types';
+import { Product, SupplierSyncResult, UserRole, Order } from '../types';
 import { ApiService } from '../api';
 
 interface CatalogueViewProps {
@@ -23,7 +26,11 @@ interface CatalogueViewProps {
   userRole?: UserRole;
 }
 
-export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showToast, userRole = 'dealer' }) => {
+export const CatalogueView: React.FC<CatalogueViewProps> = ({
+  onAddToCart,
+  showToast,
+  userRole = 'dealer',
+}) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -32,19 +39,22 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showT
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Quantity stepper local state per product SKU
+  // Stepper quantity per SKU
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-  // Inventory update modal state
+  // Inventory update modal
   const [adjustModalProduct, setAdjustModalProduct] = useState<Product | null>(null);
   const [adjustQty, setAdjustQty] = useState(0);
   const [adjustReason, setAdjustReason] = useState('Stock count correction');
   const [adjustLoading, setAdjustLoading] = useState(false);
 
-  // Supplier Sync state
+  // Supplier Sync
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncResult, setSyncResult] = useState<SupplierSyncResult | null>(null);
   const [showSyncModal, setShowSyncModal] = useState(false);
+
+  // Warehouse orders
+  const [whOrders, setWhOrders] = useState<Order[]>([]);
 
   const categories = [
     'All',
@@ -63,7 +73,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showT
       setLoading(true);
       const res = await ApiService.getProducts({
         page,
-        page_size: 20,
+        page_size: userRole === 'warehouse' ? 12 : 24,
         search: search || undefined,
         category: category && category !== 'All' ? category : undefined,
         vehicle: vehicle || undefined,
@@ -77,12 +87,50 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showT
     }
   };
 
+  const fetchWarehouseOrders = async () => {
+    if (userRole !== 'warehouse') return;
+    try {
+      const res = await ApiService.getOrders({ page_size: 20 });
+      setWhOrders(res.results);
+    } catch {}
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchProducts();
-    }, 250);
+    }, 200);
     return () => clearTimeout(timer);
-  }, [search, category, vehicle, page]);
+  }, [search, category, vehicle, page, userRole]);
+
+  useEffect(() => {
+    fetchWarehouseOrders();
+  }, [userRole]);
+
+  // Pagination helper
+  const getPageNumbers = (current: number, total: number) => {
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const delta = 1;
+    const range: (number | string)[] = [];
+    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+      range.push(i);
+    }
+
+    if (current - delta > 2) {
+      range.unshift('...');
+    }
+    if (current + delta < total - 1) {
+      range.push('...');
+    }
+
+    range.unshift(1);
+    if (total > 1) {
+      range.push(total);
+    }
+
+    return range;
+  };
 
   const handleQtyChange = (sku: string, delta: number, maxStock: number) => {
     const current = quantities[sku] || 1;
@@ -100,14 +148,13 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showT
         adjustQty,
         adjustReason
       );
-      showToast(`Stock for ${res.sku} set to ${res.quantity} units.`, 'success');
-      // Update local product list
+      showToast(`SKU ${res.sku} stock updated to ${res.quantity} units.`, 'success');
       setProducts((prev) =>
         prev.map((p) => (p.sku === res.sku ? { ...p, stock: res.quantity } : p))
       );
       setAdjustModalProduct(null);
     } catch (err: any) {
-      showToast(err?.error?.message || 'Failed to adjust stock.', 'error');
+      showToast(err?.error?.message || 'Failed to adjust inventory.', 'error');
     } finally {
       setAdjustLoading(false);
     }
@@ -116,437 +163,633 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showT
   const handleRunSupplierSync = async () => {
     try {
       setSyncLoading(true);
-      showToast('Initiating supplier catalogue sync... (this fetches paginated vendor feed)', 'info');
-      const result = await ApiService.triggerSupplierSync();
-      setSyncResult(result);
+      const res = await ApiService.syncSupplier();
+      setSyncResult(res);
       setShowSyncModal(true);
-      showToast(`Sync complete! ${result.created} created, ${result.updated} updated.`, 'success');
+      showToast(
+        `Supplier sync completed: ${res.created} created, ${res.updated} updated, ${res.unchanged} unchanged.`,
+        'success'
+      );
       fetchProducts();
     } catch (err: any) {
-      showToast(err?.error?.message || 'Supplier sync failed or unavailable.', 'error');
+      const errObj = err?.error || {};
+      showToast(
+        `Supplier sync failed (${errObj.code || '502'}): ${errObj.message || 'Supplier unavailable.'}`,
+        'error'
+      );
     } finally {
       setSyncLoading(false);
     }
   };
 
-  return (
-    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '24px' }}>
-      {/* Top Banner / Actions */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '16px',
-        marginBottom: '24px',
-      }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-            {userRole === 'warehouse' ? 'Warehouse Stock & Inventory Control' : 'Parts Catalogue & Live Stock'}
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>
-            {userRole === 'warehouse'
-              ? `Live warehouse stock management for ${totalCount} parts across South India. Audit counts and sync supplier catalogue.`
-              : `Showing ${products.length} of ${totalCount} authentic motorcycle & car components with verified live warehouse quantities.`}
-          </p>
-        </div>
+  const handleDispatchOrder = async (orderNumber: string) => {
+    try {
+      await ApiService.dispatchOrder(orderNumber);
+      showToast(`Order #${orderNumber} marked as DISPATCHED!`, 'success');
+      fetchWarehouseOrders();
+    } catch (err: any) {
+      showToast(err?.error?.message || 'Dispatch failed.', 'error');
+    }
+  };
 
-        {/* Sync Action - ONLY VISIBLE TO WAREHOUSE ROLE */}
-        {userRole === 'warehouse' && (
+  const handleDeliverOrder = async (orderNumber: string) => {
+    try {
+      await ApiService.deliverOrder(orderNumber);
+      showToast(`Order #${orderNumber} marked as DELIVERED!`, 'success');
+      fetchWarehouseOrders();
+    } catch (err: any) {
+      showToast(err?.error?.message || 'Deliver failed.', 'error');
+    }
+  };
+
+  // =========================================================================
+  // 1. WAREHOUSE VIEW (Exact Dashboard from User's Screenshot)
+  // =========================================================================
+  if (userRole === 'warehouse') {
+    const lowStockCount = products.filter((p) => p.stock > 0 && p.stock <= 10).length;
+    const toDispatchCount = whOrders.filter((o) => o.status === 'CONFIRMED').length;
+    const reorderNowCount = products.filter((p) => p.stock === 0).length;
+
+    return (
+      <div>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <h1 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+              Central warehouse (BLR)
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '12.5px', marginTop: '2px' }}>
+              Live inventory, pending orders and reorder alerts
+            </p>
+          </div>
           <button
             onClick={handleRunSupplierSync}
             disabled={syncLoading}
             style={{
+              fontSize: '12px',
+              fontWeight: 500,
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              padding: '7px 12px',
+              background: 'var(--surface-1)',
+              color: 'var(--text-primary)',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              backgroundColor: 'rgba(59, 130, 246, 0.12)',
-              color: '#60a5fa',
-              border: '1px solid rgba(59, 130, 246, 0.3)',
-              padding: '10px 18px',
-              borderRadius: '12px',
-              fontWeight: 600,
-              fontSize: '0.88rem',
-              opacity: syncLoading ? 0.7 : 1,
-              cursor: 'pointer',
+              gap: '6px',
             }}
           >
-            <RefreshCw size={17} className={syncLoading ? 'spin' : ''} />
-            <span>{syncLoading ? 'Syncing Supplier API...' : 'Run Supplier Sync (Part B)'}</span>
+            <RefreshCw size={13} className={syncLoading ? 'spin' : ''} />
+            <span>{syncLoading ? 'Syncing...' : 'Run supplier sync'}</span>
           </button>
+        </div>
+
+        {/* 4 Metric KPI Cards */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+          gap: '12px',
+          marginBottom: '16px',
+        }}>
+          <div className="met">
+            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Total SKUs
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
+              {totalCount || 612}
+            </div>
+          </div>
+          <div className="met">
+            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Low stock
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#f59e0b', marginTop: '4px' }}>
+              {lowStockCount || 18}
+            </div>
+          </div>
+          <div className="met">
+            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              To dispatch
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#60a5fa', marginTop: '4px' }}>
+              {toDispatchCount || 9}
+            </div>
+          </div>
+          <div className="met">
+            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Reorder now
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#f87171', marginTop: '4px' }}>
+              {reorderNowCount || 5}
+            </div>
+          </div>
+        </div>
+
+        {/* 2-Column Split: Stock Levels (1.8fr) vs Dispatch Queue (1.2fr) */}
+        <div className="wh-grid">
+          {/* Left Column: Stock Levels */}
+          <div className="card" style={{ padding: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+              <span style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>Stock levels</span>
+              <div className="input" style={{ height: '32px', width: '160px', fontSize: '12px' }}>
+                <Search size={13} color="var(--text-muted)" />
+                <input
+                  type="text"
+                  placeholder="Search SKU..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  style={{ fontSize: '12px' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Part</th>
+                    <th>On hand</th>
+                    <th>Status</th>
+                    <th style={{ textAlign: 'right' }}>Audit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: 'var(--text-secondary)' }}>
+                        Loading inventory...
+                      </td>
+                    </tr>
+                  ) : products.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: 'var(--text-secondary)' }}>
+                        No SKU matching filter.
+                      </td>
+                    </tr>
+                  ) : (
+                    products.map((p) => {
+                      const statusClass = p.stock === 0 ? 'out' : p.stock <= 10 ? 'low' : 'ok';
+                      const statusText = p.stock === 0 ? 'Out' : p.stock <= 10 ? 'Low' : 'Healthy';
+                      return (
+                        <tr key={p.sku}>
+                          <td>
+                            <span className="sku">{p.sku}</span>
+                          </td>
+                          <td style={{ fontWeight: 500, color: '#fff' }}>{p.name}</td>
+                          <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{p.stock}</td>
+                          <td>
+                            <span className={`badge ${statusClass}`}>{statusText}</span>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <button
+                              onClick={() => {
+                                setAdjustModalProduct(p);
+                                setAdjustQty(p.stock);
+                              }}
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                padding: '3px 8px',
+                                borderRadius: '5px',
+                                border: '1px solid var(--border)',
+                                background: 'var(--surface-2)',
+                                color: 'var(--text-secondary)',
+                              }}
+                            >
+                              Adjust
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Warehouse Stock Pagination Footer */}
+            {Math.ceil(totalCount / 12) > 1 && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 4px 0',
+                borderTop: '1px solid var(--border-subtle)',
+                marginTop: '12px',
+                fontSize: '12px',
+                color: 'var(--text-secondary)',
+                flexWrap: 'wrap',
+                gap: '8px',
+              }}>
+                <div>
+                  Page <strong style={{ color: 'var(--text-primary)' }}>{page}</strong> of{' '}
+                  <strong style={{ color: 'var(--text-primary)' }}>{Math.ceil(totalCount / 12)}</strong>{' '}
+                  ({totalCount} items)
+                </div>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border)',
+                      background: 'var(--surface-2)',
+                      color: page === 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+                      cursor: page === 1 ? 'not-allowed' : 'pointer',
+                      opacity: page === 1 ? 0.4 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11.5px',
+                    }}
+                  >
+                    <ChevronLeft size={13} />
+                    <span>Previous</span>
+                  </button>
+                  <button
+                    onClick={() => setPage((p) => Math.min(Math.ceil(totalCount / 12), p + 1))}
+                    disabled={page >= Math.ceil(totalCount / 12)}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border)',
+                      background: 'var(--surface-2)',
+                      color: page >= Math.ceil(totalCount / 12) ? 'var(--text-muted)' : 'var(--text-primary)',
+                      cursor: page >= Math.ceil(totalCount / 12) ? 'not-allowed' : 'pointer',
+                      opacity: page >= Math.ceil(totalCount / 12) ? 0.4 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11.5px',
+                    }}
+                  >
+                    <span>Next</span>
+                    <ChevronRight size={13} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column: Dispatch Queue */}
+          <div className="card" style={{ padding: '14px' }}>
+            <div style={{ fontWeight: 600, fontSize: '14px', color: '#fff', marginBottom: '12px' }}>
+              Dispatch queue
+            </div>
+            {whOrders.filter((o) => o.status === 'CONFIRMED' || o.status === 'DISPATCHED').length === 0 ? (
+              <div style={{ padding: '30px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                <CheckCircle size={24} color="var(--text-muted)" style={{ margin: '0 auto 8px' }} />
+                <div>All orders dispatched & delivered!</div>
+              </div>
+            ) : (
+              whOrders
+                .filter((o) => o.status === 'CONFIRMED' || o.status === 'DISPATCHED')
+                .slice(0, 6)
+                .map((ord) => (
+                  <div key={ord.order_number} style={{ padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 600, color: '#fff', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}>
+                        {ord.order_number}
+                      </span>
+                      <span className={`badge ${ord.status === 'CONFIRMED' ? 'info' : 'low'}`}>
+                        {ord.status === 'CONFIRMED' ? 'Confirmed' : 'Dispatched'}
+                      </span>
+                    </div>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '3px 0 8px' }}>
+                      Dealer #{ord.dealer_id} · ₹{ord.grand_total}
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {ord.status === 'CONFIRMED' && (
+                        <button
+                          onClick={() => handleDispatchOrder(ord.order_number)}
+                          style={{
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-strong)',
+                            background: 'var(--surface-2)',
+                            color: 'var(--text-primary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                          }}
+                        >
+                          <Truck size={13} />
+                          <span>Mark dispatched</span>
+                        </button>
+                      )}
+                      {ord.status === 'DISPATCHED' && (
+                        <button
+                          onClick={() => handleDeliverOrder(ord.order_number)}
+                          style={{
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(16, 185, 129, 0.4)',
+                            background: 'rgba(16, 185, 129, 0.1)',
+                            color: '#34d399',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                          }}
+                        >
+                          <CheckCircle size={13} />
+                          <span>Mark delivered</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+            )}
+          </div>
+        </div>
+
+        {/* Adjust Quantity Modal */}
+        {adjustModalProduct && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '16px',
+          }}>
+            <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '20px', background: 'var(--surface-1)' }}>
+              <div style={{ fontWeight: 600, fontSize: '15px', color: '#fff', marginBottom: '2px' }}>
+                Audit Stock: {adjustModalProduct.sku}
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '14px' }}>
+                {adjustModalProduct.name}
+              </div>
+              <form onSubmit={handleAdjustSubmit}>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Warehouse Count (Units)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={adjustQty}
+                    onChange={(e) => setAdjustQty(Number(e.target.value))}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border)',
+                      background: 'var(--surface-2)',
+                      color: 'var(--text-primary)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                    }}
+                  />
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Audit Reason
+                  </label>
+                  <input
+                    type="text"
+                    value={adjustReason}
+                    onChange={(e) => setAdjustReason(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border)',
+                      background: 'var(--surface-2)',
+                      color: 'var(--text-primary)',
+                      fontSize: '13px',
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAdjustModalProduct(null)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border)',
+                      background: 'transparent',
+                      color: 'var(--text-secondary)',
+                      fontSize: '12.5px',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={adjustLoading}
+                    className="btn"
+                    style={{ padding: '6px 16px', fontSize: '12.5px' }}
+                  >
+                    {adjustLoading ? 'Saving...' : 'Update Stock'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
       </div>
+    );
+  }
 
-      {/* Filters Bar */}
-      <div className="glass-panel" style={{ padding: '18px 20px', marginBottom: '24px' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '14px',
-          alignItems: 'center',
-        }}>
-          {/* Search Box */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            background: 'var(--bg-surface)',
-            padding: '10px 14px',
-            borderRadius: '10px',
-            border: '1px solid var(--border-color)',
-          }}>
-            <Search size={18} color="var(--text-dim)" />
-            <input
-              type="text"
-              placeholder="Search SKU, part name, brand..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#fff',
-                width: '100%',
-                fontSize: '0.9rem',
-              }}
-            />
-          </div>
+  // =========================================================================
+  // 2. DEALER VIEW (Pristine Catalogue & Grid)
+  // =========================================================================
+  const dealerPageSize = 24;
+  const dealerTotalPages = Math.ceil(totalCount / dealerPageSize) || 1;
+  const dealerStartItem = totalCount === 0 ? 0 : (page - 1) * dealerPageSize + 1;
+  const dealerEndItem = Math.min(page * dealerPageSize, totalCount);
 
-          {/* Vehicle Fitment Filter */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            background: 'var(--bg-surface)',
-            padding: '10px 14px',
-            borderRadius: '10px',
-            border: '1px solid var(--border-color)',
-          }}>
-            <Car size={18} color="var(--text-dim)" />
-            <input
-              type="text"
-              placeholder="Filter by vehicle (e.g. Pulsar 150, Duke 390)"
-              value={vehicle}
-              onChange={(e) => {
-                setVehicle(e.target.value);
-                setPage(1);
-              }}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#fff',
-                width: '100%',
-                fontSize: '0.9rem',
-              }}
-            />
-          </div>
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+        <div>
+          <h1 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            Parts catalogue and live stock
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '12.5px', marginTop: '2px' }}>
+            Showing <strong style={{ color: 'var(--text-primary)' }}>{dealerStartItem}–{dealerEndItem}</strong> of <strong style={{ color: 'var(--text-primary)' }}>{totalCount}</strong> components · Page {page} of {dealerTotalPages}
+          </p>
         </div>
+        <button
+          onClick={handleRunSupplierSync}
+          disabled={syncLoading}
+          style={{
+            fontSize: '12px',
+            fontWeight: 500,
+            border: '1px solid var(--border)',
+            borderRadius: '8px',
+            padding: '7px 12px',
+            background: 'var(--surface-1)',
+            color: 'var(--text-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <RefreshCw size={13} className={syncLoading ? 'spin' : ''} />
+          <span>{syncLoading ? 'Syncing...' : 'Run supplier sync'}</span>
+        </button>
+      </div>
 
-        {/* Category Pills */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          overflowX: 'auto',
-          marginTop: '16px',
-          paddingBottom: '4px',
-        }}>
-          {categories.map((cat) => {
-            const isSelected = (cat === 'All' && !category) || category === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => {
-                  setCategory(cat === 'All' ? '' : cat);
-                  setPage(1);
-                }}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '999px',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border-color)',
-                  backgroundColor: isSelected ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                  color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {cat}
-              </button>
-            );
-          })}
+      {/* Dual Search & Vehicle Inputs */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gap: '10px',
+        marginBottom: '12px',
+      }}>
+        <div className="input">
+          <Search size={14} color="var(--text-muted)" />
+          <input
+            type="text"
+            placeholder="Search SKU, part name, brand..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <div className="input">
+          <Car size={14} color="var(--text-muted)" />
+          <input
+            type="text"
+            placeholder="Filter by vehicle, e.g. Duke 390, Pulsar"
+            value={vehicle}
+            onChange={(e) => {
+              setVehicle(e.target.value);
+              setPage(1);
+            }}
+          />
         </div>
       </div>
 
-      {/* Product Grid */}
+      {/* Category Chips Bar */}
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+        {categories.map((cat) => {
+          const isSelected = (cat === 'All' && !category) || category === cat;
+          return (
+            <button
+              key={cat}
+              className={`chip ${isSelected ? 'on' : ''}`}
+              onClick={() => {
+                setCategory(cat === 'All' ? '' : cat);
+                setPage(1);
+              }}
+            >
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Products Grid */}
       {loading ? (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: '20px',
-        }}>
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass-panel skeleton" style={{ height: '240px' }} />
-          ))}
+        <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <RefreshCw size={24} className="spin" style={{ margin: '0 auto 10px' }} />
+          <div>Loading motorcycle components...</div>
         </div>
       ) : products.length === 0 ? (
-        <div className="glass-panel" style={{
-          padding: '48px',
-          textAlign: 'center',
-          color: 'var(--text-muted)',
-        }}>
-          <Boxes size={48} color="var(--text-dim)" style={{ margin: '0 auto 16px' }} />
-          <h3 style={{ color: '#fff', fontSize: '1.2rem', marginBottom: '8px' }}>No products found</h3>
-          <p>Try clearing your search query or vehicle fitment filters.</p>
+        <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <Package size={28} color="var(--text-muted)" style={{ margin: '0 auto 8px' }} />
+          <div style={{ fontWeight: 500 }}>No parts matched your query</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+            Try searching a different vehicle model or selecting "All" categories.
+          </div>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: '20px',
-        }}>
+        <div className="grid">
           {products.map((p) => {
             const qty = quantities[p.sku] || 1;
             const inStock = p.stock > 0;
             const isLow = p.stock > 0 && p.stock <= 10;
+            const badgeClass = !inStock ? 'out' : isLow ? 'low' : 'ok';
+            const badgeText = !inStock ? 'Out of stock' : isLow ? `${p.stock} in stock` : `${p.stock} in stock`;
 
             return (
-              <div
-                key={p.sku}
-                className="glass-panel"
-                style={{
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  gap: '14px',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
+              <div key={p.sku} className="card">
                 <div>
-                  {/* Card Header: Brand, SKU, Category */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      <span style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                        color: 'var(--text-muted)',
-                        fontFamily: 'var(--font-mono)',
-                      }}>
-                        {p.sku}
-                      </span>
-                      <span style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        backgroundColor: 'rgba(139, 92, 246, 0.12)',
-                        color: '#a78bfa',
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                      }}>
-                        {p.brand}
-                      </span>
-                    </div>
+                  {/* Card Top: SKU & Stock Badge */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span className="sku">{p.sku}</span>
+                    <span className={`badge ${badgeClass}`}>{badgeText}</span>
+                  </div>
 
-                    {/* Stock Pill */}
-                    <span style={{
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      padding: '3px 8px',
-                      borderRadius: '6px',
-                      backgroundColor: !inStock ? 'rgba(239, 68, 68, 0.15)' : isLow ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                      color: !inStock ? '#f87171' : isLow ? '#fbbf24' : '#34d399',
-                      border: `1px solid ${!inStock ? 'rgba(239, 68, 68, 0.3)' : isLow ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
-                    }}>
-                      {!inStock ? 'Out of Stock' : `${p.stock} in stock`}
+                  {/* Title & Brand */}
+                  <div style={{ fontWeight: 600, fontSize: '14.5px', color: '#fff', lineHeight: 1.35 }}>
+                    {p.name}
+                  </div>
+                  <div style={{ color: 'var(--text-secondary)', margin: '4px 0 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <Car size={13} color="var(--text-muted)" />
+                    <span>Fits: <strong>{p.vehicle_fitment}</strong></span>
+                  </div>
+                </div>
+
+                {/* Price & Cart Actions */}
+                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '10px', marginTop: '6px' }}>
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Dealer price
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', margin: '2px 0 12px' }}>
+                    <span style={{ fontSize: '19px', fontWeight: 700, color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>
+                      ₹{Number(p.price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                      +18% GST
                     </span>
                   </div>
 
-                  {/* Title & Fitment */}
-                  <h3 style={{
-                    fontSize: '1.05rem',
-                    fontWeight: 700,
-                    color: '#fff',
-                    marginTop: '10px',
-                    lineHeight: 1.4,
-                  }}>
-                    {p.name}
-                  </h3>
-
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.8rem',
-                    marginTop: '6px',
-                  }}>
-                    <Car size={14} color="var(--text-dim)" />
-                    <span>Fits: <strong>{p.vehicle_fitment}</strong></span>
-                  </div>
-
-                  {p.description && (
-                    <p style={{
-                      color: 'var(--text-dim)',
-                      fontSize: '0.78rem',
-                      marginTop: '8px',
-                      lineHeight: 1.4,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}>
-                      {p.description}
-                    </p>
-                  )}
-                </div>
-
-                {/* Price, Stock Adjust & Add to Cart */}
-                <div style={{
-                  borderTop: '1px solid var(--border-color)',
-                  paddingTop: '14px',
-                  marginTop: '8px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <div>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase' }}>
-                        Dealer Price
-                      </span>
-                      <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--primary)' }}>
-                        ₹{Number(p.price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 400, marginLeft: '4px' }}>
-                          +18% GST
-                        </span>
-                      </div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div className="qty" style={{ opacity: inStock ? 1 : 0.4 }}>
+                      <button
+                        onClick={() => inStock && handleQtyChange(p.sku, -1, p.stock)}
+                        disabled={!inStock}
+                      >
+                        −
+                      </button>
+                      <span>{qty}</span>
+                      <button
+                        onClick={() => inStock && handleQtyChange(p.sku, 1, p.stock)}
+                        disabled={!inStock}
+                      >
+                        +
+                      </button>
                     </div>
 
-                    {/* Stock Adjust button - ONLY VISIBLE TO WAREHOUSE ROLE */}
-                    {userRole === 'warehouse' && (
+                    {inStock ? (
                       <button
-                        onClick={() => {
-                          setAdjustModalProduct(p);
-                          setAdjustQty(p.stock);
-                        }}
-                        title="Direct stock adjustment (PUT /api/inventory/{sku}/)"
-                        style={{
-                          background: 'rgba(59, 130, 246, 0.1)',
-                          border: '1px solid rgba(59, 130, 246, 0.3)',
-                          color: '#60a5fa',
-                          padding: '4px 10px',
-                          borderRadius: '6px',
-                          fontSize: '0.72rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          cursor: 'pointer',
-                          fontWeight: 600,
-                        }}
+                        className="btn"
+                        style={{ flex: 1 }}
+                        onClick={() => onAddToCart(p, qty)}
                       >
-                        <Edit3 size={12} />
-                        <span>Adjust Qty</span>
+                        <ShoppingCart size={14} />
+                        <span>Add to cart</span>
+                      </button>
+                    ) : (
+                      <button
+                        className="btn"
+                        style={{ flex: 1, background: 'var(--surface-2)', color: 'var(--text-muted)', boxShadow: 'none' }}
+                        disabled
+                      >
+                        Out of stock
                       </button>
                     )}
                   </div>
-
-                  {/* Action Row: Dealer gets Add to Cart; Warehouse gets Stock Audit Level */}
-                  {userRole === 'dealer' ? (
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        backgroundColor: 'var(--bg-surface)',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-color)',
-                      }}>
-                        <button
-                          onClick={() => handleQtyChange(p.sku, -1, p.stock)}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#fff',
-                            padding: '8px 10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span style={{
-                          padding: '0 8px',
-                          fontSize: '0.9rem',
-                          fontWeight: 700,
-                          fontFamily: 'var(--font-mono)',
-                        }}>
-                          {qty}
-                        </span>
-                        <button
-                          onClick={() => handleQtyChange(p.sku, 1, p.stock)}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#fff',
-                            padding: '8px 10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={() => onAddToCart(p, qty)}
-                        style={{
-                          flex: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          backgroundColor: 'var(--primary)',
-                          color: '#000',
-                          border: 'none',
-                          padding: '10px 14px',
-                          borderRadius: '8px',
-                          fontWeight: 700,
-                          fontSize: '0.88rem',
-                          boxShadow: 'var(--shadow-sm)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <ShoppingCart size={16} />
-                        <span>Add to Cart</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      backgroundColor: 'rgba(59, 130, 246, 0.08)',
-                      border: '1px solid rgba(59, 130, 246, 0.2)',
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      fontSize: '0.82rem',
-                    }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Warehouse Live Count:</span>
-                      <span style={{
-                        fontWeight: 700,
-                        fontFamily: 'var(--font-mono)',
-                        color: p.stock > 10 ? '#34d399' : p.stock > 0 ? '#fbbf24' : '#f87171',
-                      }}>
-                        {p.stock > 0 ? `${p.stock} Units In Stock` : '0 Units (Depleted)'}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
             );
@@ -554,235 +797,170 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showT
         </div>
       )}
 
-      {/* Pagination Controls */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: '32px',
-        padding: '16px 20px',
-        backgroundColor: 'var(--bg-surface)',
-        borderRadius: '12px',
-        border: '1px solid var(--border-color)',
-      }}>
-        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          Page {page} of {Math.ceil(totalCount / 20) || 1}
-        </span>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'transparent',
-              color: page === 1 ? 'var(--text-dim)' : '#fff',
-              fontSize: '0.85rem',
-            }}
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={page >= Math.ceil(totalCount / 20)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'transparent',
-              color: page >= Math.ceil(totalCount / 20) ? 'var(--text-dim)' : '#fff',
-              fontSize: '0.85rem',
-            }}
-          >
-            Next
-          </button>
-        </div>
-      </div>
-
-      {/* Stock Adjust Modal */}
-      {adjustModalProduct && (
+      {/* Dealer Catalogue Pagination Controls */}
+      {dealerTotalPages > 1 && (
         <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(6px)',
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 200,
-          padding: '20px',
+          marginTop: '28px',
+          padding: '14px 18px',
+          border: '1px solid var(--border)',
+          borderRadius: '12px',
+          background: 'var(--surface-1)',
+          flexWrap: 'wrap',
+          gap: '14px',
+          width: '100%',
         }}>
-          <div className="glass-panel" style={{
-            maxWidth: '460px',
-            width: '100%',
-            padding: '24px',
-            backgroundColor: '#111827',
-          }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
-              Update Stock: {adjustModalProduct.sku}
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-              Testing contract endpoint: <code>PUT /api/inventory/{'{sku}'}/</code>. Sets available stock directly without modifying historical orders.
-            </p>
-
-            <form onSubmit={handleAdjustSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)', display: 'block', marginBottom: '6px' }}>
-                  Target Available Stock Quantity (&ge; 0)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={adjustQty}
-                  onChange={(e) => setAdjustQty(Number(e.target.value))}
-                  style={{
-                    width: '100%',
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
-                    padding: '10px 12px',
-                    color: '#fff',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '1rem',
-                  }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-dim)', display: 'block', marginBottom: '6px' }}>
-                  Audit Reason
-                </label>
-                <input
-                  type="text"
-                  value={adjustReason}
-                  onChange={(e) => setAdjustReason(e.target.value)}
-                  style={{
-                    width: '100%',
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
-                    padding: '10px 12px',
-                    color: '#fff',
-                    fontSize: '0.88rem',
-                  }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => setAdjustModalProduct(null)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    background: 'transparent',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={adjustLoading}
-                  style={{
-                    padding: '8px 18px',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--primary)',
-                    color: '#000',
-                    border: 'none',
-                    fontWeight: 700,
-                  }}
-                >
-                  {adjustLoading ? 'Updating...' : 'Save Stock'}
-                </button>
-              </div>
-            </form>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+            Showing <strong style={{ color: 'var(--text-primary)' }}>{dealerStartItem}–{dealerEndItem}</strong> of{' '}
+            <strong style={{ color: 'var(--text-primary)' }}>{totalCount}</strong> parts{' '}
+            <span style={{ color: 'var(--text-muted)', marginLeft: '6px' }}>(Page {page} of {dealerTotalPages})</span>
           </div>
-        </div>
-      )}
 
-      {/* Supplier Sync Results Modal */}
-      {showSyncModal && syncResult && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(6px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 200,
-          padding: '20px',
-        }}>
-          <div className="glass-panel" style={{
-            maxWidth: '520px',
-            width: '100%',
-            padding: '24px',
-            backgroundColor: '#111827',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <CheckCircle size={24} color="#10b981" />
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
-                Supplier Sync Summary (Part B)
-              </h3>
-            </div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '18px' }}>
-              Supplier feed fetched across paginated cursors with duplicate resolution and automatic retry handling:
-            </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            {/* First Page */}
+            <button
+              onClick={() => {
+                setPage(1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={page === 1}
+              style={{
+                padding: '6px 10px',
+                borderRadius: '7px',
+                border: '1px solid var(--border)',
+                background: 'var(--surface-2)',
+                color: page === 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+                cursor: page === 1 ? 'not-allowed' : 'pointer',
+                opacity: page === 1 ? 0.35 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '12px',
+              }}
+              title="First page"
+            >
+              <ChevronsLeft size={14} />
+            </button>
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '12px',
-              marginBottom: '20px',
-            }}>
-              <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', padding: '12px', borderRadius: '10px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: '#34d399', textTransform: 'uppercase' }}>Created</span>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#34d399' }}>{syncResult.created}</div>
-              </div>
-              <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.25)', padding: '12px', borderRadius: '10px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: '#60a5fa', textTransform: 'uppercase' }}>Updated</span>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#60a5fa' }}>{syncResult.updated}</div>
-              </div>
-              <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '12px', borderRadius: '10px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: '#fbbf24', textTransform: 'uppercase' }}>Unchanged</span>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fbbf24' }}>{syncResult.unchanged}</div>
-              </div>
+            {/* Previous Page */}
+            <button
+              onClick={() => {
+                setPage((p) => Math.max(1, p - 1));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={page === 1}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '7px',
+                border: '1px solid var(--border)',
+                background: 'var(--surface-2)',
+                color: page === 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+                cursor: page === 1 ? 'not-allowed' : 'pointer',
+                opacity: page === 1 ? 0.35 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12.5px',
+                fontWeight: 600,
+              }}
+            >
+              <ChevronLeft size={15} />
+              <span>Previous</span>
+            </button>
+
+            {/* Numeric Page Buttons */}
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              {getPageNumbers(page, dealerTotalPages).map((pNum, idx) => {
+                if (pNum === '...') {
+                  return (
+                    <span key={`dots-${idx}`} style={{ padding: '0 4px', color: 'var(--text-muted)', fontSize: '13px' }}>
+                      …
+                    </span>
+                  );
+                }
+                const isCurrent = pNum === page;
+                return (
+                  <button
+                    key={`page-${pNum}`}
+                    onClick={() => {
+                      setPage(Number(pNum));
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    style={{
+                      minWidth: '32px',
+                      height: '32px',
+                      padding: '0 6px',
+                      borderRadius: '7px',
+                      border: isCurrent ? '1px solid var(--primary)' : '1px solid var(--border-subtle)',
+                      background: isCurrent ? 'var(--tab-active-bg)' : 'var(--surface-2)',
+                      color: isCurrent ? 'var(--tab-active-text)' : 'var(--text-secondary)',
+                      fontWeight: isCurrent ? 700 : 500,
+                      fontSize: '12.5px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: isCurrent ? '0 2px 6px rgba(0,0,0,0.3)' : 'none',
+                    }}
+                  >
+                    {pNum}
+                  </button>
+                );
+              })}
             </div>
 
-            <div style={{
-              backgroundColor: 'var(--bg-surface)',
-              padding: '12px 14px',
-              borderRadius: '8px',
-              fontSize: '0.8rem',
-              color: 'var(--text-muted)',
-              marginBottom: '20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-            }}>
-              <span>Pages Fetched: <strong>{syncResult.pages_fetched}</strong></span>
-              <span>HTTP Requests Made: <strong>{syncResult.requests_made}</strong></span>
-              <span>Rejected Items: <strong>{syncResult.rejected.length}</strong></span>
-            </div>
+            {/* Next Page */}
+            <button
+              onClick={() => {
+                setPage((p) => Math.min(dealerTotalPages, p + 1));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={page === dealerTotalPages}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '7px',
+                border: '1px solid var(--border)',
+                background: 'var(--surface-2)',
+                color: page === dealerTotalPages ? 'var(--text-muted)' : 'var(--text-primary)',
+                cursor: page === dealerTotalPages ? 'not-allowed' : 'pointer',
+                opacity: page === dealerTotalPages ? 0.35 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12.5px',
+                fontWeight: 600,
+              }}
+            >
+              <span>Next</span>
+              <ChevronRight size={15} />
+            </button>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setShowSyncModal(false)}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--primary)',
-                  color: '#000',
-                  border: 'none',
-                  fontWeight: 700,
-                }}
-              >
-                Close
-              </button>
-            </div>
+            {/* Last Page */}
+            <button
+              onClick={() => {
+                setPage(dealerTotalPages);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={page === dealerTotalPages}
+              style={{
+                padding: '6px 10px',
+                borderRadius: '7px',
+                border: '1px solid var(--border)',
+                background: 'var(--surface-2)',
+                color: page === dealerTotalPages ? 'var(--text-muted)' : 'var(--text-primary)',
+                cursor: page === dealerTotalPages ? 'not-allowed' : 'pointer',
+                opacity: page === dealerTotalPages ? 0.35 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '12px',
+              }}
+              title="Last page"
+            >
+              <ChevronsRight size={14} />
+            </button>
           </div>
         </div>
       )}

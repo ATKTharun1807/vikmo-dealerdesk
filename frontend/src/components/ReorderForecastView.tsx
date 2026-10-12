@@ -58,7 +58,7 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
   const totalSuggestedUnits = items.reduce((acc, curr) => acc + curr.reorder_qty, 0);
 
   return (
-    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '24px' }}>
+    <div style={{ width: '100%' }}>
       {/* Header */}
       <div style={{
         display: 'flex',

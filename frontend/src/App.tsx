@@ -108,99 +108,103 @@ export function App() {
   const cartTotalItems = cart.reduce((acc, curr) => acc + curr.quantity, 0);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Top Header & Navbar */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        cartCount={cartTotalItems}
-        dealers={dealers}
-        selectedDealerId={selectedDealerId}
-        setSelectedDealerId={setSelectedDealerId}
-        apiHealthy={apiHealthy}
-        onOpenCart={() => setActiveTab('cart')}
-        userRole={userRole}
-        setUserRole={(newRole) => {
-          setUserRole(newRole);
-          if (newRole === 'warehouse') {
-            if (activeTab === 'cart') {
-              setActiveTab('catalogue');
+    <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div className="vk">
+        {/* Top Header & Navbar */}
+        <Navbar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          cartCount={cartTotalItems}
+          dealers={dealers}
+          selectedDealerId={selectedDealerId}
+          setSelectedDealerId={setSelectedDealerId}
+          apiHealthy={apiHealthy}
+          onOpenCart={() => setActiveTab('cart')}
+          userRole={userRole}
+          setUserRole={(newRole) => {
+            setUserRole(newRole);
+            if (newRole === 'warehouse') {
+              if (activeTab === 'cart') {
+                setActiveTab('catalogue');
+              }
+            } else if (newRole === 'dealer') {
+              if (activeTab === 'reorder') {
+                setActiveTab('catalogue');
+              }
             }
-          } else if (newRole === 'dealer') {
-            if (activeTab === 'reorder') {
-              setActiveTab('catalogue');
-            }
-          }
-        }}
-      />
+          }}
+        />
 
-      {/* Main View Area */}
-      <main style={{ flex: 1, paddingBottom: '60px' }}>
-        {activeTab === 'catalogue' && (
-          <CatalogueView
-            key={`catalogue-${userRole}`}
-            onAddToCart={handleAddToCart}
-            showToast={showToast}
-            userRole={userRole}
-          />
-        )}
+        {/* Main View Body */}
+        <main className="body">
+          {activeTab === 'catalogue' && (
+            <CatalogueView
+              key={`catalogue-${userRole}`}
+              onAddToCart={handleAddToCart}
+              showToast={showToast}
+              userRole={userRole}
+            />
+          )}
 
-        {activeTab === 'cart' && userRole === 'dealer' && (
-          <CartCheckoutView
-            cart={cart}
-            onUpdateQty={handleUpdateQty}
-            onRemoveItem={handleRemoveItem}
-            onClearCart={handleClearCart}
-            selectedDealer={selectedDealer}
-            onOrderCreated={(ord) => {
-              setSelectedOrderNumber(ord.order_number);
-            }}
-            showToast={showToast}
-            onViewOrder={handleViewOrder}
-          />
-        )}
+          {activeTab === 'cart' && userRole === 'dealer' && (
+            <CartCheckoutView
+              cart={cart}
+              onUpdateQty={handleUpdateQty}
+              onRemoveItem={handleRemoveItem}
+              onClearCart={handleClearCart}
+              selectedDealer={selectedDealer}
+              onOrderCreated={(ord) => {
+                setSelectedOrderNumber(ord.order_number);
+              }}
+              showToast={showToast}
+              onViewOrder={handleViewOrder}
+            />
+          )}
 
-        {activeTab === 'orders' && (
-          <OrdersView
-            key={`orders-${userRole}`}
-            selectedOrderNumber={selectedOrderNumber}
-            showToast={showToast}
-            userRole={userRole}
-            activeDealerId={selectedDealerId}
-          />
-        )}
+          {activeTab === 'orders' && (
+            <OrdersView
+              key={`orders-${userRole}`}
+              selectedOrderNumber={selectedOrderNumber}
+              showToast={showToast}
+              userRole={userRole}
+              activeDealerId={selectedDealerId}
+            />
+          )}
 
-        {activeTab === 'assistant' && (
-          <AssistantChatView
-            selectedDealer={selectedDealer}
-            onViewOrder={handleViewOrder}
-            showToast={showToast}
-          />
-        )}
+          {activeTab === 'assistant' && (
+            <AssistantChatView
+              selectedDealer={selectedDealer}
+              onViewOrder={handleViewOrder}
+              showToast={showToast}
+            />
+          )}
 
-        {activeTab === 'reorder' && (
-          <ReorderForecastView showToast={showToast} />
-        )}
-      </main>
+          {activeTab === 'reorder' && (
+            <ReorderForecastView showToast={showToast} />
+          )}
+        </main>
+      </div>
 
       {/* Footer */}
       <footer style={{
-        borderTop: '1px solid var(--border-color)',
-        padding: '20px 24px',
+        padding: '16px 28px',
         textAlign: 'center',
-        backgroundColor: 'rgba(9, 13, 22, 0.95)',
-        fontSize: '0.8rem',
-        color: 'var(--text-dim)',
+        fontSize: '12px',
+        color: 'var(--text-muted)',
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '8px',
+        borderTop: '1px solid var(--border-subtle)',
+        background: 'var(--surface-0)',
       }}>
-        <div style={{ maxWidth: '1440px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-          <div>
-            VIKMO DealerDesk · Bengaluru Motorcycle & Parts Distribution System
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <span>Backend: Django REST Framework</span>
-            <span>Database: PostgreSQL</span>
-            <span>Frontend: React 19 + TypeScript</span>
-          </div>
+        <div>VIKMO DealerDesk · Automotive Distribution System</div>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <span>Django REST</span>
+          <span>PostgreSQL</span>
+          <span>React 19 + TypeScript</span>
         </div>
       </footer>
 

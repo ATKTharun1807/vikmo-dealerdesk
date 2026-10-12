@@ -100,62 +100,54 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
   const statuses = ['All', 'DRAFT', 'CONFIRMED', 'DISPATCHED', 'DELIVERED', 'CANCELLED'];
 
   return (
-    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '24px' }}>
+    <div>
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '16px',
-        marginBottom: '24px',
+        gap: '12px',
+        marginBottom: '14px',
       }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-            {userRole === 'warehouse' ? 'Warehouse Dispatch & Orders Desk' : 'My Dealership Orders & Invoices'}
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>
+          <div style={{ fontSize: '18px', fontWeight: 500 }}>
+            {userRole === 'warehouse' ? 'Dispatch desk' : 'Orders and GST invoices'}
+          </div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '2px' }}>
             {userRole === 'warehouse'
-              ? 'Central fulfillment desk: audit dealer orders, trigger warehouse dispatches, and confirm deliveries.'
+              ? 'Central distribution fulfillment: inspect orders, dispatch shipments, and track deliveries.'
               : 'Auditable order history, live fulfillment tracking, and itemized 18% GST tax invoices.'}
-          </p>
+          </div>
         </div>
 
         <button
           onClick={fetchOrders}
           style={{
+            fontSize: '12px',
+            border: '0.5px solid var(--border-strong)',
+            borderRadius: '8px',
+            padding: '6px 12px',
+            background: 'transparent',
+            color: 'var(--text-primary)',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            backgroundColor: 'var(--bg-surface)',
-            color: '#fff',
-            border: '1px solid var(--border-color)',
-            padding: '8px 16px',
-            borderRadius: '10px',
-            fontSize: '0.85rem',
+            gap: '6px',
           }}
         >
-          <RefreshCw size={15} />
+          <i className="ti ti-refresh" aria-hidden="true"></i>
           <span>Refresh</span>
         </button>
       </div>
 
-      {/* Filter Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto' }}>
+      {/* Filter Chips */}
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', overflowX: 'auto', flexWrap: 'wrap' }}>
         {statuses.map((st) => {
           const isSelected = (st === 'All' && !statusFilter) || statusFilter === st;
           return (
             <button
               key={st}
+              className={`chip ${isSelected ? 'on' : ''}`}
               onClick={() => setStatusFilter(st === 'All' ? '' : st)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border-color)',
-                backgroundColor: isSelected ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-surface)',
-                color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
-              }}
             >
               {st}
             </button>
@@ -171,59 +163,62 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         alignItems: 'start',
       }}>
         {/* Table of Orders */}
-        <div className="glass-panel" style={{ padding: '20px', overflowX: 'auto' }}>
+        <div className="card" style={{ padding: '12px', overflowX: 'auto' }}>
           {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="skeleton" style={{ height: '54px' }} />
+                <div key={i} style={{ height: '40px', background: 'var(--surface-1)', borderRadius: '6px' }} />
               ))}
             </div>
           ) : orders.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-              <FileText size={40} color="var(--text-dim)" style={{ margin: '0 auto 12px' }} />
-              <h3>No orders found</h3>
-              <p style={{ fontSize: '0.85rem' }}>Create draft orders from the Cart tab.</p>
+            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+              <i className="ti ti-file-invoice" style={{ fontSize: '32px', display: 'block', margin: '0 auto 8px' }}></i>
+              <div style={{ fontWeight: 500 }}>No orders found</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Create draft orders from the Cart tab.</div>
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+            <table>
               <thead>
-                <tr style={{ color: 'var(--text-dim)', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>
-                  <th style={{ paddingBottom: '10px' }}>Order #</th>
-                  <th style={{ paddingBottom: '10px' }}>Dealer ID</th>
-                  <th style={{ paddingBottom: '10px' }}>Status</th>
-                  <th style={{ paddingBottom: '10px', textAlign: 'right' }}>Total (₹)</th>
-                  <th style={{ paddingBottom: '10px', textAlign: 'center' }}>Action</th>
+                <tr>
+                  <th>Order #</th>
+                  <th>Dealer ID</th>
+                  <th>Status</th>
+                  <th style={{ textAlign: 'right' }}>Total (₹)</th>
+                  <th style={{ textAlign: 'center' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {orders.map((ord) => {
                   const isSelected = currentOrder?.order_number === ord.order_number;
+                  const badgeClass =
+                    ord.status === 'DELIVERED' ? 'ok' :
+                    ord.status === 'CONFIRMED' ? 'info' :
+                    ord.status === 'CANCELLED' ? 'out' : 'low';
+
                   return (
                     <tr
                       key={ord.order_number}
                       onClick={() => setCurrentOrder(ord)}
                       style={{
-                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                        backgroundColor: isSelected ? 'rgba(245, 158, 11, 0.08)' : 'transparent',
+                        backgroundColor: isSelected ? 'var(--surface-1)' : 'transparent',
                         cursor: 'pointer',
-                        transition: 'background-color 0.15s',
                       }}
                     >
-                      <td style={{ padding: '12px 6px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#fff' }}>
+                      <td className="sku" style={{ background: 'none' }}>
                         {ord.order_number}
                       </td>
-                      <td style={{ padding: '12px 6px', color: 'var(--text-muted)' }}>
+                      <td style={{ color: 'var(--text-secondary)' }}>
                         Dealer #{ord.dealer_id}
                       </td>
-                      <td style={{ padding: '12px 6px' }}>
-                        <span className={`badge badge-${ord.status.toLowerCase()}`}>
+                      <td>
+                        <span className={`badge ${badgeClass}`}>
                           {ord.status}
                         </span>
                       </td>
-                      <td style={{ padding: '12px 6px', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--primary)' }}>
+                      <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--primary)' }}>
                         ₹{ord.grand_total}
                       </td>
-                      <td style={{ padding: '12px 6px', textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center' }}>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -231,14 +226,14 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                           }}
                           style={{
                             background: 'transparent',
-                            border: '1px solid var(--border-color)',
-                            color: 'var(--text-muted)',
-                            padding: '4px 10px',
-                            borderRadius: '6px',
-                            fontSize: '0.75rem',
+                            border: '0.5px solid var(--border-strong)',
+                            color: 'var(--text-secondary)',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
                           }}
                         >
-                          View Details
+                          View
                         </button>
                       </td>
                     </tr>
@@ -251,7 +246,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
         {/* Selected Order Detail Pane */}
         {currentOrder && (
-          <div className="glass-panel" style={{ padding: '24px', backgroundColor: '#111827' }}>
+          <div className="card" style={{ padding: '16px', background: 'var(--surface-2)' }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
               <div>

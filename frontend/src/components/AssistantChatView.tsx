@@ -116,7 +116,7 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '24px' }}>
+    <div style={{ width: '100%' }}>
       {/* Header */}
       <div style={{
         display: 'flex',

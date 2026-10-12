@@ -147,14 +147,12 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-          Cart & Order Lifecycle Engine
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>
-          Strict business rules: Cart $\to$ Draft (no stock deducted) $\to$ Confirm (row-level locked, all-or-nothing stock deduction, exact 18% GST).
-        </p>
+    <div style={{ width: '100%' }}>
+      <div style={{ marginBottom: '14px' }}>
+        <div style={{ fontSize: '18px', fontWeight: 500 }}>Cart and order checkout</div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '2px' }}>
+          Cart → Draft (zero stock locked) → Confirm (PostgreSQL row-level locking, exact 18% GST).
+        </div>
       </div>
 
       {/* Stock Shortage Banner (409 INSUFFICIENT_STOCK) */}
@@ -221,12 +219,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
       )}
 
       {/* Main Grid: Items vs Summary */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1.4fr 1fr',
-        gap: '24px',
-        alignItems: 'start',
-      }}>
+      <div className="cart-layout-grid">
         {/* Left Column: Cart Items or Created Draft Details */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {createdDraft ? (
