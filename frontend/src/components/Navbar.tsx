@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Zap,
+  Truck,
   ShoppingCart,
   Package,
   FileText,
@@ -47,8 +47,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="bar">
         {/* Brand / Logo */}
         <div className="logo">
-          <div className="mark">
-            <Zap size={18} fill="#412402" color="#412402" strokeWidth={2.5} />
+          <div className="mark" title="VIKMO Logistics & Distribution Hub">
+            <Truck size={19} color="#412402" strokeWidth={2.4} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
