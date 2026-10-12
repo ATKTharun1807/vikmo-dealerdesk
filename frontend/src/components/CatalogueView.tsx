@@ -14,15 +14,16 @@ import {
   Tag,
   Boxes,
 } from 'lucide-react';
-import { Product, SupplierSyncResult } from '../types';
+import { Product, SupplierSyncResult, UserRole } from '../types';
 import { ApiService } from '../api';
 
 interface CatalogueViewProps {
   onAddToCart: (product: Product, quantity: number) => void;
   showToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
+  userRole?: UserRole;
 }
 
-export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showToast }) => {
+export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showToast, userRole = 'dealer' }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -141,34 +142,39 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showT
       }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-            Parts Catalogue & Live Stock
+            {userRole === 'warehouse' ? 'Warehouse Stock & Inventory Control' : 'Parts Catalogue & Live Stock'}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>
-            Showing {products.length} of {totalCount} authentic motorcycle & car components with verified live warehouse quantities.
+            {userRole === 'warehouse'
+              ? `Live warehouse stock management for ${totalCount} parts across South India. Audit counts and sync supplier catalogue.`
+              : `Showing ${products.length} of ${totalCount} authentic motorcycle & car components with verified live warehouse quantities.`}
           </p>
         </div>
 
-        {/* Sync Action */}
-        <button
-          onClick={handleRunSupplierSync}
-          disabled={syncLoading}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            backgroundColor: 'rgba(59, 130, 246, 0.12)',
-            color: '#60a5fa',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            padding: '10px 18px',
-            borderRadius: '12px',
-            fontWeight: 600,
-            fontSize: '0.88rem',
-            opacity: syncLoading ? 0.7 : 1,
-          }}
-        >
-          <RefreshCw size={17} className={syncLoading ? 'spin' : ''} />
-          <span>{syncLoading ? 'Syncing Supplier API...' : 'Run Supplier Sync (Part B)'}</span>
-        </button>
+        {/* Sync Action - ONLY VISIBLE TO WAREHOUSE ROLE */}
+        {userRole === 'warehouse' && (
+          <button
+            onClick={handleRunSupplierSync}
+            disabled={syncLoading}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              backgroundColor: 'rgba(59, 130, 246, 0.12)',
+              color: '#60a5fa',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontWeight: 600,
+              fontSize: '0.88rem',
+              opacity: syncLoading ? 0.7 : 1,
+              cursor: 'pointer',
+            }}
+          >
+            <RefreshCw size={17} className={syncLoading ? 'spin' : ''} />
+            <span>{syncLoading ? 'Syncing Supplier API...' : 'Run Supplier Sync (Part B)'}</span>
+          </button>
+        )}
       </div>
 
       {/* Filters Bar */}
@@ -421,28 +427,32 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showT
                       </div>
                     </div>
 
-                    {/* Stock Adjust button */}
-                    <button
-                      onClick={() => {
-                        setAdjustModalProduct(p);
-                        setAdjustQty(p.stock);
-                      }}
-                      title="Direct stock adjustment (PUT /api/inventory/{sku}/)"
-                      style={{
-                        background: 'transparent',
-                        border: '1px solid var(--border-color)',
-                        color: 'var(--text-muted)',
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        fontSize: '0.72rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}
-                    >
-                      <Edit3 size={12} />
-                      <span>Adjust Qty</span>
-                    </button>
+                    {/* Stock Adjust button - ONLY VISIBLE TO WAREHOUSE ROLE */}
+                    {userRole === 'warehouse' && (
+                      <button
+                        onClick={() => {
+                          setAdjustModalProduct(p);
+                          setAdjustQty(p.stock);
+                        }}
+                        title="Direct stock adjustment (PUT /api/inventory/{sku}/)"
+                        style={{
+                          background: 'rgba(59, 130, 246, 0.1)',
+                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          color: '#60a5fa',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '0.72rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                        }}
+                      >
+                        <Edit3 size={12} />
+                        <span>Adjust Qty</span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Quantity Stepper & Add Button */}

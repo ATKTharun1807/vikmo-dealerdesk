@@ -13,17 +13,21 @@ import {
   ArrowRight,
   RefreshCw,
 } from 'lucide-react';
-import { Order, OrderStatus } from '../types';
+import { Order, OrderStatus, UserRole } from '../types';
 import { ApiService } from '../api';
 
 interface OrdersViewProps {
   selectedOrderNumber?: string | null;
   showToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
+  userRole?: UserRole;
+  activeDealerId?: number;
 }
 
 export const OrdersView: React.FC<OrdersViewProps> = ({
   selectedOrderNumber,
   showToast,
+  userRole = 'dealer',
+  activeDealerId,
 }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,10 +111,12 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
       }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-            Orders & GST Engine
+            {userRole === 'warehouse' ? 'Warehouse Dispatch & Orders Desk' : 'My Dealership Orders & Invoices'}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>
-            Auditable lifecycle management with per-line 18% GST (ROUND_HALF_UP) and state transition enforcement.
+            {userRole === 'warehouse'
+              ? 'Central fulfillment desk: audit dealer orders, trigger warehouse dispatches, and confirm deliveries.'
+              : 'Auditable order history, live fulfillment tracking, and itemized 18% GST tax invoices.'}
           </p>
         </div>
 
@@ -431,25 +437,44 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
               {currentOrder.status === 'CONFIRMED' && (
                 <>
-                  <button
-                    onClick={() => handleAction('dispatch')}
-                    disabled={actionLoading}
-                    style={{
+                  {userRole === 'warehouse' ? (
+                    <button
+                      onClick={() => handleAction('dispatch')}
+                      disabled={actionLoading}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        backgroundColor: '#3b82f6',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 18px',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        fontSize: '0.88rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Truck size={16} />
+                      <span>Dispatch Order</span>
+                    </button>
+                  ) : (
+                    <div style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      backgroundColor: '#3b82f6',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '10px 18px',
+                      backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                      color: '#60a5fa',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      padding: '8px 14px',
                       borderRadius: '8px',
-                      fontWeight: 700,
-                      fontSize: '0.88rem',
-                    }}
-                  >
-                    <Truck size={16} />
-                    <span>Dispatch Order</span>
-                  </button>
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                    }}>
+                      <Clock size={16} />
+                      <span>Awaiting Warehouse Dispatch</span>
+                    </div>
+                  )}
                   <button
                     onClick={() => handleAction('cancel')}
                     disabled={actionLoading}
@@ -464,6 +489,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                       borderRadius: '8px',
                       fontWeight: 600,
                       fontSize: '0.88rem',
+                      cursor: 'pointer',
                     }}
                   >
                     <XCircle size={16} />
@@ -473,25 +499,44 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
               )}
 
               {currentOrder.status === 'DISPATCHED' && (
-                <button
-                  onClick={() => handleAction('deliver')}
-                  disabled={actionLoading}
-                  style={{
+                userRole === 'warehouse' ? (
+                  <button
+                    onClick={() => handleAction('deliver')}
+                    disabled={actionLoading}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      backgroundColor: '#10b981',
+                      color: '#000',
+                      border: 'none',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      fontWeight: 700,
+                      fontSize: '0.88rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <CheckCheck size={16} />
+                    <span>Mark as Delivered</span>
+                  </button>
+                ) : (
+                  <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    backgroundColor: '#10b981',
-                    color: '#000',
-                    border: 'none',
-                    padding: '10px 18px',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                    color: '#34d399',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    padding: '8px 14px',
                     borderRadius: '8px',
-                    fontWeight: 700,
-                    fontSize: '0.88rem',
-                  }}
-                >
-                  <CheckCheck size={16} />
-                  <span>Mark as Delivered</span>
-                </button>
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                  }}>
+                    <Truck size={16} />
+                    <span>Dispatched · In Transit to Workshop</span>
+                  </div>
+                )
               )}
 
               {(currentOrder.status === 'DELIVERED' || currentOrder.status === 'CANCELLED') && (

@@ -5,7 +5,7 @@ import { CartCheckoutView } from './components/CartCheckoutView';
 import { OrdersView } from './components/OrdersView';
 import { AssistantChatView } from './components/AssistantChatView';
 import { ReorderForecastView } from './components/ReorderForecastView';
-import { CartItem, Dealer, Order, Product } from './types';
+import { CartItem, Dealer, Order, Product, UserRole } from './types';
 import { ApiService } from './api';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 
@@ -16,6 +16,7 @@ interface Toast {
 }
 
 export function App() {
+  const [userRole, setUserRole] = useState<UserRole>('dealer');
   const [activeTab, setActiveTab] = useState<string>('catalogue');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [dealers, setDealers] = useState<Dealer[]>([]);
@@ -118,12 +119,19 @@ export function App() {
         setSelectedDealerId={setSelectedDealerId}
         apiHealthy={apiHealthy}
         onOpenCart={() => setActiveTab('cart')}
+        userRole={userRole}
+        setUserRole={(newRole) => {
+          setUserRole(newRole);
+          if (newRole === 'dealer' && activeTab === 'reorder') {
+            setActiveTab('catalogue');
+          }
+        }}
       />
 
       {/* Main View Area */}
       <main style={{ flex: 1, paddingBottom: '60px' }}>
         {activeTab === 'catalogue' && (
-          <CatalogueView onAddToCart={handleAddToCart} showToast={showToast} />
+          <CatalogueView onAddToCart={handleAddToCart} showToast={showToast} userRole={userRole} />
         )}
 
         {activeTab === 'cart' && (
@@ -145,6 +153,8 @@ export function App() {
           <OrdersView
             selectedOrderNumber={selectedOrderNumber}
             showToast={showToast}
+            userRole={userRole}
+            activeDealerId={selectedDealerId}
           />
         )}
 

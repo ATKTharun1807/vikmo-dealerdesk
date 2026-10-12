@@ -1,3 +1,5 @@
+export type UserRole = 'dealer' | 'warehouse';
+
 export interface Product {
   sku: string;
   name: string;
