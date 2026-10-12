@@ -122,8 +122,14 @@ export function App() {
         userRole={userRole}
         setUserRole={(newRole) => {
           setUserRole(newRole);
-          if (newRole === 'dealer' && activeTab === 'reorder') {
-            setActiveTab('catalogue');
+          if (newRole === 'warehouse') {
+            if (activeTab === 'cart') {
+              setActiveTab('catalogue');
+            }
+          } else if (newRole === 'dealer') {
+            if (activeTab === 'reorder') {
+              setActiveTab('catalogue');
+            }
           }
         }}
       />
@@ -131,10 +137,15 @@ export function App() {
       {/* Main View Area */}
       <main style={{ flex: 1, paddingBottom: '60px' }}>
         {activeTab === 'catalogue' && (
-          <CatalogueView onAddToCart={handleAddToCart} showToast={showToast} userRole={userRole} />
+          <CatalogueView
+            key={`catalogue-${userRole}`}
+            onAddToCart={handleAddToCart}
+            showToast={showToast}
+            userRole={userRole}
+          />
         )}
 
-        {activeTab === 'cart' && (
+        {activeTab === 'cart' && userRole === 'dealer' && (
           <CartCheckoutView
             cart={cart}
             onUpdateQty={handleUpdateQty}
@@ -151,6 +162,7 @@ export function App() {
 
         {activeTab === 'orders' && (
           <OrdersView
+            key={`orders-${userRole}`}
             selectedOrderNumber={selectedOrderNumber}
             showToast={showToast}
             userRole={userRole}

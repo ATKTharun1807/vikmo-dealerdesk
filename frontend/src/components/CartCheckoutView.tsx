@@ -110,7 +110,8 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
 
       setCreatedDraft(order);
       onOrderCreated(order);
-      showToast(`DRAFT Order #${order.order_number} created successfully!`, 'success');
+      onClearCart();
+      showToast(`DRAFT Order #${order.order_number} created successfully! Cart converted to draft.`, 'success');
     } catch (err: any) {
       const errObj = err?.error || {};
       showToast(errObj.message || 'Failed to create order.', 'error');
@@ -308,7 +309,11 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                 )}
 
                 <button
-                  onClick={() => onViewOrder(createdDraft.order_number)}
+                  onClick={() => {
+                    const ordNum = createdDraft.order_number;
+                    setCreatedDraft(null);
+                    onViewOrder(ordNum);
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -319,10 +324,33 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                     padding: '12px 18px',
                     borderRadius: '10px',
                     fontWeight: 600,
+                    cursor: 'pointer',
                   }}
                 >
-                  <span>View Full Order</span>
+                  <span>Track in Orders Desk</span>
                   <ArrowRight size={16} />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setCreatedDraft(null);
+                    onClearCart();
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    backgroundColor: 'transparent',
+                    color: 'var(--text-muted)',
+                    border: '1px solid var(--border-color)',
+                    padding: '12px 18px',
+                    borderRadius: '10px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Plus size={16} />
+                  <span>Start New Order</span>
                 </button>
               </div>
             </div>

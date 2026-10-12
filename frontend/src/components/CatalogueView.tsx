@@ -455,73 +455,98 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({ onAddToCart, showT
                     )}
                   </div>
 
-                  {/* Quantity Stepper & Add Button */}
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      backgroundColor: 'var(--bg-surface)',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)',
-                    }}>
-                      <button
-                        onClick={() => handleQtyChange(p.sku, -1, p.stock)}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#fff',
-                          padding: '8px 10px',
-                          display: 'flex',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span style={{
-                        padding: '0 8px',
-                        fontSize: '0.9rem',
-                        fontWeight: 700,
-                        fontFamily: 'var(--font-mono)',
-                      }}>
-                        {qty}
-                      </span>
-                      <button
-                        onClick={() => handleQtyChange(p.sku, 1, p.stock)}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#fff',
-                          padding: '8px 10px',
-                          display: 'flex',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
-
-                    <button
-                      onClick={() => onAddToCart(p, qty)}
-                      style={{
-                        flex: 1,
+                  {/* Action Row: Dealer gets Add to Cart; Warehouse gets Stock Audit Level */}
+                  {userRole === 'dealer' ? (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        backgroundColor: 'var(--primary)',
-                        color: '#000',
-                        border: 'none',
-                        padding: '10px 14px',
+                        backgroundColor: 'var(--bg-surface)',
                         borderRadius: '8px',
+                        border: '1px solid var(--border-color)',
+                      }}>
+                        <button
+                          onClick={() => handleQtyChange(p.sku, -1, p.stock)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#fff',
+                            padding: '8px 10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span style={{
+                          padding: '0 8px',
+                          fontSize: '0.9rem',
+                          fontWeight: 700,
+                          fontFamily: 'var(--font-mono)',
+                        }}>
+                          {qty}
+                        </span>
+                        <button
+                          onClick={() => handleQtyChange(p.sku, 1, p.stock)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#fff',
+                            padding: '8px 10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => onAddToCart(p, qty)}
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          backgroundColor: 'var(--primary)',
+                          color: '#000',
+                          border: 'none',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          fontWeight: 700,
+                          fontSize: '0.88rem',
+                          boxShadow: 'var(--shadow-sm)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <ShoppingCart size={16} />
+                        <span>Add to Cart</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                      border: '1px solid rgba(59, 130, 246, 0.2)',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      fontSize: '0.82rem',
+                    }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Warehouse Live Count:</span>
+                      <span style={{
                         fontWeight: 700,
-                        fontSize: '0.88rem',
-                        boxShadow: 'var(--shadow-sm)',
-                      }}
-                    >
-                      <ShoppingCart size={16} />
-                      <span>Add to Cart</span>
-                    </button>
-                  </div>
+                        fontFamily: 'var(--font-mono)',
+                        color: p.stock > 10 ? '#34d399' : p.stock > 0 ? '#fbbf24' : '#f87171',
+                      }}>
+                        {p.stock > 0 ? `${p.stock} Units In Stock` : '0 Units (Depleted)'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
