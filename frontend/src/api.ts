@@ -164,6 +164,10 @@ export class ApiService {
     });
   }
 
+  static async syncSupplier(): Promise<SupplierSyncResult> {
+    return this.triggerSupplierSync();
+  }
+
   // Assistant
   static async chatWithAssistant(
     sessionId: string,
