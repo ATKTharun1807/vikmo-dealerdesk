@@ -194,7 +194,27 @@ export class ApiService {
     return this.request<{ results: ReorderItem[] }>('/reorder-suggestions/');
   }
 
+  static async procureReorders(skus?: string[]): Promise<{
+    status: string;
+    message: string;
+    total_units_procured: number;
+    procured_count: number;
+    procured_items: Array<{
+      sku: string;
+      reordered_units: number;
+      previous_stock: number;
+      new_stock: number;
+      reorder_point: number;
+    }>;
+  }> {
+    return this.request('/reorder-suggestions/', {
+      method: 'POST',
+      body: JSON.stringify({ skus: skus || null }),
+    });
+  }
+
   static async getForecast(sku: string): Promise<{ sku: string; forecast: ForecastWeek[] }> {
     return this.request<{ sku: string; forecast: ForecastWeek[] }>(`/forecast/${sku}/`);
   }
 }
+

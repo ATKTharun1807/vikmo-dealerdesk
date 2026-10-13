@@ -91,7 +91,7 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
     }
   };
 
-  // Batch Reorder All Triggered SKUs
+  // Batch Reorder All Triggered SKUs via Django Backend Core
   const handleStartBatchReorder = async () => {
     const needed = items.filter((i) => i.reorder_qty > 0);
     if (needed.length === 0) {
@@ -106,32 +106,28 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
     setBatchProgress(0);
     setBatchLogs([]);
 
-    for (let i = 0; i < needed.length; i++) {
-      const item = needed[i];
-      setBatchCurrentSku(item.sku);
-      try {
-        const newQty = item.current_stock + item.reorder_qty;
-        await ApiService.updateInventory(
-          item.sku,
-          newQty,
-          'Batch Safety Stock Restock from Demand Forecast'
-        );
-        setBatchLogs((prev) => [
-          `✓ ${item.sku}: Added +${item.reorder_qty} units (New Stock: ${newQty})`,
-          ...prev,
-        ]);
-      } catch {
-        setBatchLogs((prev) => [`✕ ${item.sku}: Failed to update inventory`, ...prev]);
-      }
-      setBatchProgress(i + 1);
-      // Small pause for realistic progress feedback
-      await new Promise((r) => setTimeout(r, 180));
-    }
+    try {
+      setBatchCurrentSku('Django Core Processing...');
+      const targetSkus = needed.map((item) => item.sku);
+      
+      // Call Django backend core atomic procurement endpoint
+      const res = await ApiService.procureReorders(targetSkus);
 
-    setBatchRunning(false);
-    setBatchCompleted(true);
-    showToast(`Batch procurement completed for ${needed.length} SKUs!`, 'success');
-    await fetchReorderData();
+      const logs = (res.procured_items || []).map(
+        (p) => `✓ ${p.sku}: Restocked +${p.reordered_units} units (New Stock: ${p.new_stock})`
+      );
+
+      setBatchLogs(logs);
+      setBatchProgress(needed.length);
+      setBatchRunning(false);
+      setBatchCompleted(true);
+      showToast(res.message || `Django batch procurement completed for ${needed.length} SKUs!`, 'success');
+      await fetchReorderData();
+    } catch (err: any) {
+      setBatchLogs((prev) => [`✕ Django backend error: ${err?.error?.message || 'Procurement failed'}`, ...prev]);
+      setBatchRunning(false);
+      showToast(err?.error?.message || 'Failed to execute batch procurement on Django backend.', 'error');
+    }
   };
 
   const reorderNeededCount = items.filter((i) => i.reorder_qty > 0).length;
