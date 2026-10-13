@@ -11,6 +11,8 @@ import {
   Tag,
   ArrowRight,
   ExternalLink,
+  Mic,
+  MicOff,
 } from 'lucide-react';
 import { AssistantMessage, Dealer } from '../types';
 import { ApiService } from '../api';
@@ -37,13 +39,15 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const quickPrompts = [
     'Do you have brake pads for a Duke 390?',
     'Check live stock for BRK-1044',
+    'Are there any out of stock parts?',
     'Order 5 units of BRK-1044',
-    'What chain lubricants fit the Pulsar 220?',
   ];
 
   const scrollToBottom = () => {
@@ -53,6 +57,68 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
   useEffect(() => {
     scrollToBottom();
   }, [messages, loading]);
+
+  // Initialize SpeechRecognition (Web Speech API)
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-IN';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        showToast('Microphone active. Speak your question...', 'info');
+      };
+
+      recognition.onresult = (event: any) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript) {
+          setInput(transcript);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        setIsListening(false);
+        if (event.error !== 'no-speech') {
+          showToast(`Voice error: ${event.error}`, 'error');
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, []);
+
+  const toggleVoiceRecording = () => {
+    if (!recognitionRef.current) {
+      showToast('Voice speech recognition is not supported in this browser. Please use Chrome/Edge.', 'error');
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        recognitionRef.current.stop();
+        setTimeout(() => {
+          try {
+            recognitionRef.current.start();
+          } catch (err) {}
+        }, 150);
+      }
+    }
+  };
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = textToSend || input;
@@ -403,6 +469,28 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
               fontSize: '0.92rem',
             }}
           />
+
+          {/* Voice Microphone Input Button */}
+          <button
+            type="button"
+            onClick={toggleVoiceRecording}
+            title={isListening ? "Listening... Click to stop recording" : "Click to speak with voice"}
+            style={{
+              backgroundColor: isListening ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+              color: isListening ? '#f87171' : 'var(--text-secondary)',
+              border: isListening ? '1px solid #ef4444' : '1px solid var(--border-color)',
+              padding: '12px 14px',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+          </button>
+
           <button
             onClick={() => handleSendMessage()}
             disabled={loading || !input.trim()}
