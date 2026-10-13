@@ -5,6 +5,7 @@ import { CartCheckoutView } from './components/CartCheckoutView';
 import { OrdersView } from './components/OrdersView';
 import { AssistantChatView } from './components/AssistantChatView';
 import { ReorderForecastView } from './components/ReorderForecastView';
+import { SupplierSyncModal } from './components/SupplierSyncModal';
 import { CartItem, Dealer, Order, Product } from './types';
 import { ApiService } from './api';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
@@ -23,6 +24,7 @@ export function App() {
   const [apiHealthy, setApiHealthy] = useState<boolean>(true);
   const [selectedOrderNumber, setSelectedOrderNumber] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('vikmo_theme');
     return saved === 'light' ? 'light' : 'dark';
@@ -135,19 +137,20 @@ export function App() {
           onOpenCart={() => setActiveTab('cart')}
           theme={theme}
           onToggleTheme={toggleTheme}
+          onOpenSyncModal={() => setSyncModalOpen(true)}
         />
 
-        {/* Main View Body */}
+        {/* Main View Body - Kept mounted for 0ms instantaneous tab switching */}
         <main className="body">
-          {activeTab === 'catalogue' && (
+          <div style={{ display: activeTab === 'catalogue' ? 'block' : 'none' }}>
             <CatalogueView
               mode="catalogue"
               onAddToCart={handleAddToCart}
               showToast={showToast}
             />
-          )}
+          </div>
 
-          {activeTab === 'cart' && (
+          <div style={{ display: activeTab === 'cart' ? 'block' : 'none' }}>
             <CartCheckoutView
               cart={cart}
               onUpdateQty={handleUpdateQty}
@@ -160,36 +163,43 @@ export function App() {
               showToast={showToast}
               onViewOrder={handleViewOrder}
             />
-          )}
+          </div>
 
-          {activeTab === 'orders' && (
+          <div style={{ display: activeTab === 'orders' ? 'block' : 'none' }}>
             <OrdersView
               selectedOrderNumber={selectedOrderNumber}
               showToast={showToast}
               activeDealerId={selectedDealerId}
             />
-          )}
+          </div>
 
-          {activeTab === 'warehouse' && (
+          <div style={{ display: activeTab === 'warehouse' ? 'block' : 'none' }}>
             <CatalogueView
               mode="warehouse"
               showToast={showToast}
             />
-          )}
+          </div>
 
-          {activeTab === 'reorder' && (
+          <div style={{ display: activeTab === 'reorder' ? 'block' : 'none' }}>
             <ReorderForecastView showToast={showToast} />
-          )}
+          </div>
 
-          {activeTab === 'assistant' && (
+          <div style={{ display: activeTab === 'assistant' ? 'block' : 'none' }}>
             <AssistantChatView
               selectedDealer={selectedDealer}
               onViewOrder={handleViewOrder}
               showToast={showToast}
             />
-          )}
+          </div>
         </main>
       </div>
+
+      {/* Dedicated Supplier Sync Modal */}
+      <SupplierSyncModal
+        isOpen={syncModalOpen}
+        onClose={() => setSyncModalOpen(false)}
+        showToast={showToast}
+      />
 
       {/* Footer */}
       <footer style={{

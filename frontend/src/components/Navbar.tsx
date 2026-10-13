@@ -14,6 +14,7 @@ import {
   Check,
   Search,
   Building2,
+  RefreshCw,
 } from 'lucide-react';
 import { Dealer } from '../types';
 
@@ -28,6 +29,7 @@ interface NavbarProps {
   onOpenCart: () => void;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
+  onOpenSyncModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -41,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCart,
   theme,
   onToggleTheme,
+  onOpenSyncModal,
 }) => {
   const [dealerDropdownOpen, setDealerDropdownOpen] = useState(false);
   const [dealerSearch, setDealerSearch] = useState('');
@@ -334,6 +337,29 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             )}
           </div>
+
+          {/* Supplier Sync Action Button */}
+          <button
+            onClick={onOpenSyncModal}
+            title="Open Supplier Catalogue Sync Console"
+            style={{
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              padding: '7px 12px',
+              display: 'flex',
+              gap: '6px',
+              alignItems: 'center',
+              background: 'var(--surface-0)',
+              color: 'var(--text-primary)',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.16s ease',
+            }}
+          >
+            <RefreshCw size={13} color="var(--primary)" />
+            <span>Supplier Sync</span>
+          </button>
 
           {/* Theme Toggle (Dark / Light) */}
           <button

@@ -163,10 +163,14 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
         {/* Table of Orders */}
         <div className="card" style={{ padding: '12px', overflowX: 'auto' }}>
           {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {[...Array(5)].map((_, i) => (
-                <div key={i} style={{ height: '40px', background: 'var(--surface-1)', borderRadius: '6px' }} />
-              ))}
+            <div style={{ padding: '48px 16px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <RefreshCw size={24} className="spin" style={{ margin: '0 auto 10px', color: 'var(--primary)' }} />
+              <div style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--text-primary)' }}>
+                Loading live orders & GST invoices...
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Fetching live transactions from PostgreSQL database
+              </div>
             </div>
           ) : orders.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
