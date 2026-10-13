@@ -70,7 +70,7 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               Demand Forecast & Safety Stock Reorder
             </h1>
             <span style={{
@@ -85,7 +85,7 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
               Section 10 Formula
             </span>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '4px' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>
             Mathematical safety stock formula: SS = ceil(1.65 × σ × √L), Reorder Point = LTD + SS, utilizing live warehouse stock.
           </p>
         </div>
@@ -96,8 +96,8 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            backgroundColor: 'var(--bg-surface)',
-            color: '#fff',
+            backgroundColor: 'var(--surface-0)',
+            color: 'var(--text-primary)',
             border: '1px solid var(--border-color)',
             padding: '8px 16px',
             borderRadius: '10px',
@@ -116,17 +116,17 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
         gap: '16px',
         marginBottom: '24px',
       }}>
-        <div className="glass-panel" style={{ padding: '20px' }}>
+        <div className="card" style={{ padding: '20px' }}>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Monitored Forecast SKUs
           </span>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
             {items.length}
           </div>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>40 critical supplier lead-time parts</span>
         </div>
 
-        <div className="glass-panel" style={{ padding: '20px' }}>
+        <div className="card" style={{ padding: '20px' }}>
           <span style={{ fontSize: '0.75rem', color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Reorder Triggered (Stock ≤ Reorder Point)
           </span>
@@ -186,13 +186,13 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
                       key={row.sku}
                       onClick={() => handleSelectSku(row.sku)}
                       style={{
-                        borderBottom: '1px solid rgba(255,255,255,0.05)',
-                        backgroundColor: isSelected ? 'rgba(245, 158, 11, 0.08)' : 'transparent',
+                        borderBottom: '1px solid var(--border-subtle)',
+                        backgroundColor: isSelected ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
                         cursor: 'pointer',
                         transition: 'background-color 0.15s',
                       }}
                     >
-                      <td style={{ padding: '12px 6px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#fff' }}>
+                      <td style={{ padding: '12px 6px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>
                         {row.sku}
                       </td>
                       <td style={{ padding: '12px 6px', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
@@ -268,11 +268,11 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
 
         {/* 4-Week Forecast Detail Pane */}
         {selectedSku && (
-          <div className="glass-panel" style={{ padding: '24px', backgroundColor: '#111827' }}>
+          <div className="card" style={{ padding: '24px', backgroundColor: 'var(--surface-1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <BarChart3 size={20} color="var(--primary)" />
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   4-Week Forecast: {selectedSku}
                 </h3>
               </div>
@@ -283,6 +283,7 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
                   border: 'none',
                   color: 'var(--text-dim)',
                   fontSize: '0.85rem',
+                  cursor: 'pointer',
                 }}
               >
                 ✕ Close
@@ -307,14 +308,14 @@ export const ReorderForecastView: React.FC<ReorderForecastViewProps> = ({ showTo
                     <div
                       key={fw.week_start}
                       style={{
-                        backgroundColor: 'var(--bg-surface)',
+                        backgroundColor: 'var(--surface-2)',
                         padding: '12px 14px',
                         borderRadius: '10px',
                         border: '1px solid var(--border-color)',
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.85rem' }}>
-                        <span style={{ fontWeight: 600, color: '#fff' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                           Week {idx + 1} ({fw.week_start})
                         </span>
                         <span style={{ fontWeight: 700, color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>

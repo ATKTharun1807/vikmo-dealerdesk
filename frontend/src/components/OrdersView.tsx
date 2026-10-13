@@ -251,7 +251,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Order Details
                 </span>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', fontFamily: 'var(--font-mono)' }}>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
                   {currentOrder.order_number}
                 </h2>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -269,10 +269,11 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              backgroundColor: 'var(--bg-surface)',
+              backgroundColor: 'var(--surface-1)',
               padding: '14px 18px',
               borderRadius: '12px',
               marginBottom: '20px',
+              border: '1px solid var(--border)',
             }}>
               {['DRAFT', 'CONFIRMED', 'DISPATCHED', 'DELIVERED'].map((step, idx) => {
                 const stepOrder = ['DRAFT', 'CONFIRMED', 'DISPATCHED', 'DELIVERED'];
@@ -292,13 +293,13 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                         justifyContent: 'center',
                         fontSize: '0.75rem',
                         fontWeight: 700,
-                        backgroundColor: isPassed ? 'var(--primary)' : 'rgba(255,255,255,0.08)',
-                        color: isPassed ? '#000' : 'var(--text-dim)',
-                        border: isCurrent ? '2px solid #fff' : 'none',
+                        backgroundColor: isPassed ? 'var(--primary)' : 'var(--surface-2)',
+                        color: isPassed ? '#fff' : 'var(--text-dim)',
+                        border: isCurrent ? '2px solid var(--primary)' : 'none',
                       }}>
                         {idx + 1}
                       </div>
-                      <span style={{ fontSize: '0.7rem', color: isPassed ? '#fff' : 'var(--text-dim)', fontWeight: isCurrent ? 700 : 500 }}>
+                      <span style={{ fontSize: '0.7rem', color: isPassed ? 'var(--text-primary)' : 'var(--text-dim)', fontWeight: isCurrent ? 700 : 500 }}>
                         {step}
                       </span>
                     </div>
@@ -306,7 +307,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                       <div style={{
                         flex: 1,
                         height: '2px',
-                        backgroundColor: currentIndex > idx && currentOrder.status !== 'CANCELLED' ? 'var(--primary)' : 'rgba(255,255,255,0.08)',
+                        backgroundColor: currentIndex > idx && currentOrder.status !== 'CANCELLED' ? 'var(--primary)' : 'var(--border)',
                         margin: '0 8px',
                         marginBottom: '16px',
                       }} />
@@ -318,10 +319,11 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
 
             {/* Per-line GST Item Table */}
             <div style={{
-              backgroundColor: 'var(--bg-surface)',
+              backgroundColor: 'var(--surface-1)',
               borderRadius: '10px',
               padding: '16px',
               marginBottom: '20px',
+              border: '1px solid var(--border)',
             }}>
               <h4 style={{ fontSize: '0.9rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.04em' }}>
                 Itemized GST Breakdown (§7.4 Exact to the Paisa)
@@ -339,14 +341,14 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
                 </thead>
                 <tbody>
                   {currentOrder.items.map((it, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                       <td style={{ padding: '10px 0' }}>
-                        <div style={{ fontWeight: 600, color: '#fff' }}>{it.name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{it.name}</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>{it.sku}</div>
                       </td>
-                      <td style={{ padding: '10px 0', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>{it.quantity}</td>
-                      <td style={{ padding: '10px 0', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>₹{it.unit_price}</td>
-                      <td style={{ padding: '10px 0', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>₹{it.line_subtotal}</td>
+                      <td style={{ padding: '10px 0', textAlign: 'center', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{it.quantity}</td>
+                      <td style={{ padding: '10px 0', textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>₹{it.unit_price}</td>
+                      <td style={{ padding: '10px 0', textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>₹{it.line_subtotal}</td>
                       <td style={{ padding: '10px 0', textAlign: 'right', fontFamily: 'var(--font-mono)', color: '#10b981' }}>₹{it.line_tax}</td>
                       <td style={{ padding: '10px 0', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--primary)' }}>
                         ₹{it.line_total}
@@ -368,14 +370,14 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
                   <span>Order Subtotal:</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', color: '#fff' }}>₹{currentOrder.subtotal}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>₹{currentOrder.subtotal}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
                   <span>GST Total (Per-Line Quantized):</span>
                   <span style={{ fontFamily: 'var(--font-mono)', color: '#10b981' }}>₹{currentOrder.tax_total}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px' }}>
-                  <span style={{ fontWeight: 800, color: '#fff' }}>Grand Total:</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid var(--border)', paddingTop: '8px' }}>
+                  <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>Grand Total:</span>
                   <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>
                     ₹{currentOrder.grand_total}
                   </span>

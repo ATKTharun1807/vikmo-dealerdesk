@@ -181,7 +181,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
               }}>
                 409 INSUFFICIENT_STOCK
               </span>
-              <h4 style={{ color: '#fff', fontSize: '1rem', fontWeight: 700 }}>Stock Shortage Detected</h4>
+              <h4 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>Stock Shortage Detected</h4>
             </div>
             <p style={{ color: '#fca5a5', fontSize: '0.88rem', marginTop: '6px' }}>
               {stockError.message}
@@ -190,7 +190,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
             {stockError.details && stockError.details.length > 0 && (
               <div style={{
                 marginTop: '12px',
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                backgroundColor: 'rgba(0, 0, 0, 0.1)',
                 padding: '12px',
                 borderRadius: '8px',
               }}>
@@ -205,7 +205,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                       fontSize: '0.85rem',
                       fontFamily: 'var(--font-mono)',
                     }}>
-                      <span style={{ color: '#fff' }}>SKU: {item.sku}</span>
+                      <span style={{ color: 'var(--text-primary)' }}>SKU: {item.sku}</span>
                       <span style={{ color: '#f87171' }}>
                         Requested: <strong>{item.requested}</strong> | Available: <strong>{item.available}</strong>
                       </span>
@@ -223,11 +223,11 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
         {/* Left Column: Cart Items or Created Draft Details */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {createdDraft ? (
-            <div className="glass-panel" style={{ padding: '24px', backgroundColor: '#111827' }}>
+            <div className="card" style={{ padding: '24px', backgroundColor: 'var(--surface-1)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <FileText size={22} color="var(--primary)" />
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                     {createdDraft.order_number}
                   </h3>
                 </div>
@@ -262,7 +262,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                     {createdDraft.items.map((item, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '10px 0' }}>
-                          <div style={{ fontWeight: 600, color: '#fff' }}>{item.name}</div>
+                          <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{item.name}</div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>{item.sku}</div>
                         </td>
                         <td style={{ padding: '10px 0', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>{item.quantity}</td>
@@ -287,7 +287,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                       alignItems: 'center',
                       gap: '8px',
                       backgroundColor: 'var(--primary)',
-                      color: '#000',
+                      color: 'var(--primary-text)',
                       border: 'none',
                       padding: '12px 22px',
                       borderRadius: '10px',
@@ -311,8 +311,8 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    color: '#fff',
+                    backgroundColor: 'var(--surface-2)',
+                    color: 'var(--text-primary)',
                     border: '1px solid var(--border-color)',
                     padding: '12px 18px',
                     borderRadius: '10px',
@@ -354,13 +354,13 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
               color: 'var(--text-muted)',
             }}>
               <ShoppingCart size={48} color="var(--text-dim)" style={{ margin: '0 auto 16px' }} />
-              <h3 style={{ color: '#fff', fontSize: '1.25rem', marginBottom: '8px' }}>Your Cart is Empty</h3>
+              <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', marginBottom: '8px' }}>Your Cart is Empty</h3>
               <p style={{ fontSize: '0.9rem' }}>
                 Browse the catalogue and add items to place a draft order for {selectedDealer?.name || 'the dealer'}.
               </p>
             </div>
           ) : (
-            <div className="glass-panel" style={{ padding: '20px' }}>
+            <div className="card" style={{ padding: '20px' }}>
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -369,7 +369,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                 borderBottom: '1px solid var(--border-color)',
                 paddingBottom: '12px',
               }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#fff' }}>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                   Cart Items ({cart.length})
                 </h3>
                 <button
@@ -398,7 +398,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      backgroundColor: 'var(--bg-surface)',
+                      backgroundColor: 'var(--surface-2)',
                       padding: '12px 16px',
                       borderRadius: '10px',
                       border: '1px solid var(--border-color)',
@@ -409,7 +409,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                       <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
                         {item.product.sku} · {item.product.brand}
                       </span>
-                      <h4 style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 600 }}>{item.product.name}</h4>
+                      <h4 style={{ color: 'var(--text-primary)', fontSize: '0.95rem', fontWeight: 600 }}>{item.product.name}</h4>
                       <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 700 }}>
                         ₹{Number(item.product.price).toFixed(2)} / unit
                       </span>
@@ -419,7 +419,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
-                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      backgroundColor: 'var(--surface-0)',
                       borderRadius: '6px',
                       border: '1px solid var(--border-color)',
                     }}>
@@ -428,14 +428,14 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                         style={{
                           background: 'transparent',
                           border: 'none',
-                          color: '#fff',
+                          color: 'var(--text-primary)',
                           padding: '6px 8px',
                           display: 'flex',
                         }}
                       >
                         <Minus size={13} />
                       </button>
-                      <span style={{ padding: '0 8px', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ padding: '0 8px', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                         {item.quantity}
                       </span>
                       <button
@@ -443,7 +443,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                         style={{
                           background: 'transparent',
                           border: 'none',
-                          color: '#fff',
+                          color: 'var(--text-primary)',
                           padding: '6px 8px',
                           display: 'flex',
                         }}
@@ -475,11 +475,11 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Dealer Card */}
           {selectedDealer && (
-            <div className="glass-panel" style={{ padding: '18px 20px' }}>
+            <div className="card" style={{ padding: '18px 20px' }}>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Ordering Dealership
               </span>
-              <h4 style={{ color: '#fff', fontSize: '1.05rem', fontWeight: 700, marginTop: '2px' }}>
+              <h4 style={{ color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 700, marginTop: '2px' }}>
                 {selectedDealer.name}
               </h4>
               <div style={{
@@ -490,24 +490,24 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                 fontSize: '0.8rem',
                 color: 'var(--text-muted)',
               }}>
-                <div>Code: <strong style={{ color: '#fff' }}>{selectedDealer.dealer_code}</strong></div>
-                <div>City: <strong style={{ color: '#fff' }}>{selectedDealer.city}</strong></div>
-                <div>GSTIN: <strong style={{ color: '#fff' }}>{selectedDealer.gstin || 'N/A'}</strong></div>
+                <div>Code: <strong style={{ color: 'var(--text-primary)' }}>{selectedDealer.dealer_code}</strong></div>
+                <div>City: <strong style={{ color: 'var(--text-primary)' }}>{selectedDealer.city}</strong></div>
+                <div>GSTIN: <strong style={{ color: 'var(--text-primary)' }}>{selectedDealer.gstin || 'N/A'}</strong></div>
                 <div>Credit: <strong style={{ color: 'var(--primary)' }}>₹{Number(selectedDealer.credit_limit).toLocaleString('en-IN')}</strong></div>
               </div>
             </div>
           )}
 
           {/* Money & GST Breakdown Card */}
-          <div className="glass-panel" style={{ padding: '22px' }}>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#fff', marginBottom: '14px' }}>
+          <div className="card" style={{ padding: '22px' }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '14px' }}>
               Payment & GST Breakdown
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.88rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
                 <span>Subtotal (Net Price)</span>
-                <span style={{ fontFamily: 'var(--font-mono)', color: '#fff' }}>₹{totals.subtotal}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>₹{totals.subtotal}</span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
@@ -517,7 +517,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                     ROUND_HALF_UP
                   </span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', color: '#fff' }}>₹{totals.taxTotal}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>₹{totals.taxTotal}</span>
               </div>
 
               <div style={{
@@ -528,7 +528,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                 justifyContent: 'space-between',
                 alignItems: 'baseline',
               }}>
-                <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff' }}>Grand Total</span>
+                <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>Grand Total</span>
                 <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>
                   ₹{totals.grandTotal}
                 </span>
@@ -570,7 +570,7 @@ export const CartCheckoutView: React.FC<CartCheckoutViewProps> = ({
                   border: '1px solid var(--border-color)',
                   borderRadius: '8px',
                   padding: '8px 10px',
-                  color: '#fff',
+                  color: 'var(--text-primary)',
                   fontSize: '0.8rem',
                   fontFamily: 'var(--font-mono)',
                 }}

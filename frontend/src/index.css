@@ -1,51 +1,125 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Anthropic Dark Slate / Warm Charcoal Palette */
-  --bg-app: #121211;
-  --surface-0: #161615;
-  --surface-1: #1d1d1b;
-  --surface-2: #242422;
-  --surface-3: #2d2d2a;
-  --surface-hover: #343431;
+  /* Default: Deep Stealth Obsidian & Emerald (Dark Mode) */
+  --bg-app: #08090b;
+  --surface-0: #0c0e12;
+  --surface-1: #11141a;
+  --surface-2: #171b24;
+  --surface-3: #1f2430;
+  --surface-hover: #262c3a;
 
-  --border: rgba(255, 255, 255, 0.09);
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-subtle: rgba(255, 255, 255, 0.04);
 
-  --text-primary: #f4f3ef;
-  --text-secondary: #a3a199;
-  --text-muted: #737169;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
 
-  /* Anthropic Warm Gold / Honey Amber Accent */
-  --accent-gold: #FAC775;
-  --primary: #EF9F27;
-  --primary-hover: #d98818;
-  --primary-glow: rgba(239, 159, 39, 0.25);
+  /* Precision Yellow / Amber Accent for Dark Mode */
+  --accent-gold: #f59e0b;
+  --accent-yellow: #fbbf24;
+  --primary: #f59e0b;
+  --primary-hover: #d97706;
+  --primary-glow: rgba(245, 158, 11, 0.28);
+  --primary-text: #090a0f; /* Deep jet-black text for maximum readability on yellow CTAs */
   
   /* Signature Active Tab Pill */
-  --tab-active-bg: #FAEEDA;
-  --tab-active-text: #412402;
+  --tab-active-bg: rgba(245, 158, 11, 0.16);
+  --tab-active-text: #fbbf24;
+  --tab-active-border: rgba(245, 158, 11, 0.42);
 
-  /* Semantic Status Badges (Dark Mode Harmonized) */
-  --badge-ok-bg: rgba(39, 80, 10, 0.28);
-  --badge-ok-text: #86efac;
-  --badge-ok-border: rgba(74, 222, 128, 0.25);
+  /* Semantic Status Badges */
+  --badge-ok-bg: rgba(16, 185, 129, 0.12);
+  --badge-ok-text: #34d399;
+  --badge-ok-border: rgba(16, 185, 129, 0.28);
 
-  --badge-low-bg: rgba(239, 159, 39, 0.2);
-  --badge-low-text: #fcd34d;
-  --badge-low-border: rgba(251, 191, 36, 0.3);
+  --badge-low-bg: rgba(245, 158, 11, 0.12);
+  --badge-low-text: #fbbf24;
+  --badge-low-border: rgba(245, 158, 11, 0.28);
 
-  --badge-out-bg: rgba(185, 28, 28, 0.25);
-  --badge-out-text: #fca5a5;
-  --badge-out-border: rgba(248, 113, 113, 0.3);
+  --badge-out-bg: rgba(239, 68, 68, 0.12);
+  --badge-out-text: #f87171;
+  --badge-out-border: rgba(239, 68, 68, 0.28);
 
-  --badge-info-bg: rgba(14, 116, 144, 0.25);
-  --badge-info-text: #7dd3fc;
-  --badge-info-border: rgba(56, 189, 248, 0.3);
+  --badge-info-bg: rgba(59, 130, 246, 0.12);
+  --badge-info-text: #60a5fa;
+  --badge-info-border: rgba(59, 130, 246, 0.28);
+
+  /* Chat System Colors */
+  --chat-bg: var(--surface-1);
+  --chat-user-bg: #261d0a;
+  --chat-user-text: #fef3c7;
+  --chat-user-border: rgba(245, 158, 11, 0.35);
+  --chat-assistant-bg: var(--surface-2);
+  --chat-assistant-text: #f1f5f9;
+  --chat-assistant-border: var(--border);
+
+  /* Legacy Utility Compatibility Aliases */
+  --bg-surface: var(--surface-1);
+  --border-color: var(--border);
+  --text-dim: var(--text-muted);
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+
+/* -------------------------------------------------------------
+   LIGHT MODE: HIGH-CONTRAST PROFESSIONAL AUTOMOTIVE CONSOLE
+   Every single letter and word is crisp, dark, and 100% visible
+   ------------------------------------------------------------- */
+[data-theme="light"], :root[data-theme="light"], body[data-theme="light"] {
+  --bg-app: #f4f6f8;
+  --surface-0: #ffffff;
+  --surface-1: #ffffff;
+  --surface-2: #f8fafc;
+  --surface-3: #f1f5f9;
+  --surface-hover: #e2e8f0;
+
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-subtle: #f1f5f9;
+
+  --text-primary: #0f172a;    /* Deep slate jet-black for max readability */
+  --text-secondary: #334155;  /* Deep slate gray */
+  --text-muted: #64748b;      /* High-contrast muted slate */
+
+  /* Precision Green Accent for Light Mode */
+  --accent-emerald: #059669;
+  --accent-mint: #047857;
+  --primary: #059669;
+  --primary-hover: #047857;
+  --primary-glow: rgba(5, 150, 105, 0.22);
+  --primary-text: #ffffff;    /* Pure crisp white on green buttons */
+
+  --tab-active-bg: #ecfdf5;
+  --tab-active-text: #065f46;
+  --tab-active-border: #10b981;
+
+  --badge-ok-bg: #ecfdf5;
+  --badge-ok-text: #065f46;
+  --badge-ok-border: #a7f3d0;
+
+  --badge-low-bg: #fffbeb;
+  --badge-low-text: #92400e;
+  --badge-low-border: #fde68a;
+
+  --badge-out-bg: #fef2f2;
+  --badge-out-text: #991b1b;
+  --badge-out-border: #fecaca;
+
+  --badge-info-bg: #f0f9ff;
+  --badge-info-text: #075985;
+  --badge-info-border: #bae6fd;
+
+  --chat-bg: #ffffff;
+  --chat-user-bg: #ecfdf5;
+  --chat-user-text: #064e3b;
+  --chat-user-border: #a7f3d0;
+  --chat-assistant-bg: #f8fafc;
+  --chat-assistant-text: #0f172a;
+  --chat-assistant-border: #e2e8f0;
 }
 
 * {
@@ -364,7 +438,7 @@ input, select, textarea {
 .vk .btn {
   background: var(--primary);
   border: none;
-  color: #2e1b03;
+  color: var(--primary-text);
   font-weight: 600;
   font-size: 13px;
   border-radius: 8px;
@@ -374,12 +448,12 @@ input, select, textarea {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  box-shadow: 0 2px 6px rgba(239, 159, 39, 0.28);
+  box-shadow: 0 2px 6px var(--primary-glow);
 }
 
 .vk .btn:hover {
   background: var(--primary-hover);
-  box-shadow: 0 4px 12px rgba(239, 159, 39, 0.4);
+  box-shadow: 0 4px 12px var(--primary-glow);
 }
 
 .vk .btn:active {
@@ -507,3 +581,128 @@ input, select, textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.24);
 }
+
+/* -------------------------------------------------------------
+   LIGHT MODE OVERRIDES: SHARP CONTRAST & MAXIMUM LEGIBILITY
+   ------------------------------------------------------------- */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="light"] body {
+  background-color: #f4f6f8;
+  color: #0f172a;
+}
+
+[data-theme="light"] .vk {
+  background-color: #f4f6f8;
+}
+
+[data-theme="light"] .vk .bar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .vk .tabs {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] .vk .tabs button {
+  color: #475569;
+}
+
+[data-theme="light"] .vk .tabs button:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+[data-theme="light"] .vk .card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .vk .card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .vk .sku {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+[data-theme="light"] .vk .qty {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+}
+
+[data-theme="light"] .vk .qty button {
+  color: #334155;
+}
+
+[data-theme="light"] .vk .qty button:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+[data-theme="light"] .vk .qty span {
+  color: #0f172a;
+}
+
+[data-theme="light"] .vk .input {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+}
+
+[data-theme="light"] .vk .input input {
+  color: #0f172a;
+}
+
+[data-theme="light"] .vk .input input::placeholder {
+  color: #94a3b8;
+}
+
+[data-theme="light"] .vk .met {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .vk .chip {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+[data-theme="light"] .vk .chip:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+[data-theme="light"] .vk table {
+  background: #ffffff;
+}
+
+[data-theme="light"] .vk th {
+  color: #475569;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+[data-theme="light"] .vk td {
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+

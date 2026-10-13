@@ -23,6 +23,20 @@ export function App() {
   const [apiHealthy, setApiHealthy] = useState<boolean>(true);
   const [selectedOrderNumber, setSelectedOrderNumber] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('vikmo_theme');
+    return saved === 'light' ? 'light' : 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('vikmo_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
@@ -119,6 +133,8 @@ export function App() {
           setSelectedDealerId={setSelectedDealerId}
           apiHealthy={apiHealthy}
           onOpenCart={() => setActiveTab('cart')}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         {/* Main View Body */}

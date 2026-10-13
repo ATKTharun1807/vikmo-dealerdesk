@@ -193,34 +193,41 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
         marginBottom: '20px',
       }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-              Dealer Assistant
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+              Operations Copilot
             </h1>
             <span style={{
-              fontSize: '0.72rem',
-              fontWeight: 800,
-              background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-              color: '#fff',
-              padding: '2px 8px',
+              fontSize: '11px',
+              fontWeight: 600,
+              background: 'var(--tab-active-bg)',
+              color: 'var(--tab-active-text)',
+              border: '1px solid var(--tab-active-border)',
+              padding: '3px 9px',
               borderRadius: '6px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              letterSpacing: '0.02em',
             }}>
-              GenAI Agent
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 6px var(--primary)' }} />
+              Live ERP Grounding · Gemini AI
             </span>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: '4px' }}>
-            Powered by tool calling (`search_parts`, `check_stock`, `create_draft_order`) with database grounding.
+          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '4px' }}>
+            Enterprise assistant for real-time parts lookup, vehicle fitment intelligence, and automated dealer orders.
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{
-            fontSize: '0.72rem',
+            fontSize: '11px',
             fontFamily: 'var(--font-mono)',
-            backgroundColor: 'var(--bg-surface)',
-            padding: '4px 8px',
+            backgroundColor: 'var(--surface-1)',
+            padding: '5px 10px',
             borderRadius: '6px',
-            color: 'var(--text-dim)',
+            color: 'var(--text-secondary)',
+            border: '1px solid var(--border)',
           }}>
             Session: {sessionId}
           </span>
@@ -230,32 +237,36 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              color: 'var(--text-muted)',
-              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--surface-1)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border)',
               padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '0.8rem',
+              borderRadius: '7px',
+              fontSize: '12px',
+              fontWeight: 500,
             }}
           >
-            <RotateCcw size={14} />
+            <RotateCcw size={13} />
             <span>Reset Session</span>
           </button>
         </div>
       </div>
 
       {/* Chat Container */}
-      <div className="glass-panel" style={{
+      <div style={{
         height: '620px',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#111827',
+        backgroundColor: 'var(--chat-bg)',
+        border: '1px solid var(--border)',
+        borderRadius: '12px',
         overflow: 'hidden',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)',
       }}>
         {/* Messages Body */}
         <div style={{
           flex: 1,
-          padding: '20px',
+          padding: '20px 24px',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
@@ -276,17 +287,17 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
               >
                 {/* Avatar */}
                 <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '10px',
-                  backgroundColor: isUser ? 'rgba(59, 130, 246, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '9px',
+                  backgroundColor: isUser ? 'rgba(16, 185, 129, 0.15)' : 'var(--surface-2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  border: `1px solid ${isUser ? 'rgba(59, 130, 246, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
+                  border: isUser ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid var(--border)',
                 }}>
-                  {isUser ? <User size={18} color="#60a5fa" /> : <Bot size={18} color="var(--primary)" />}
+                  {isUser ? <User size={16} color="var(--primary)" /> : <Bot size={16} color="var(--primary)" />}
                 </div>
 
                 {/* Bubble Content */}
@@ -297,36 +308,37 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
                   alignItems: isUser ? 'flex-end' : 'flex-start',
                 }}>
                   <div style={{
-                    backgroundColor: isUser ? '#1e3a8a' : 'var(--bg-surface)',
-                    color: '#fff',
+                    backgroundColor: isUser ? 'var(--chat-user-bg)' : 'var(--chat-assistant-bg)',
+                    color: isUser ? 'var(--chat-user-text)' : 'var(--chat-assistant-text)',
                     padding: '12px 16px',
-                    borderRadius: '14px',
-                    border: `1px solid ${isUser ? 'rgba(59, 130, 246, 0.3)' : 'var(--border-color)'}`,
-                    fontSize: '0.9rem',
-                    lineHeight: 1.5,
+                    borderRadius: '12px',
+                    border: `1px solid ${isUser ? 'var(--chat-user-border)' : 'var(--chat-assistant-border)'}`,
+                    fontSize: '13.5px',
+                    lineHeight: 1.55,
                     whiteSpace: 'pre-wrap',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                   }}>
                     {m.text}
                   </div>
 
                   {/* Cited SKUs Pills */}
                   {m.cited_skus && m.cited_skus.length > 0 && (
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', alignSelf: 'center' }}>
-                        Cited Parts:
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        Verified Stock SKUs:
                       </span>
                       {m.cited_skus.map((sku) => (
                         <span
                           key={sku}
                           style={{
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
+                            fontSize: '11px',
+                            fontWeight: 600,
                             fontFamily: 'var(--font-mono)',
-                            backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
                             color: 'var(--primary)',
-                            padding: '2px 8px',
-                            borderRadius: '6px',
-                            border: '1px solid rgba(245, 158, 11, 0.3)',
+                            padding: '2px 7px',
+                            borderRadius: '5px',
+                            border: '1px solid rgba(16, 185, 129, 0.28)',
                           }}
                         >
                           {sku}
@@ -338,25 +350,25 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
                   {/* Tool Calls Inspector */}
                   {m.tool_calls && m.tool_calls.length > 0 && (
                     <div style={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.35)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      backgroundColor: 'var(--surface-0)',
+                      border: '1px solid var(--border)',
                       borderRadius: '8px',
                       padding: '8px 12px',
-                      fontSize: '0.75rem',
+                      fontSize: '11px',
                       fontFamily: 'var(--font-mono)',
-                      color: 'var(--text-muted)',
+                      color: 'var(--text-secondary)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '4px',
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a78bfa' }}>
-                        <Wrench size={13} />
-                        <strong>Tool Calls Executed ({m.tool_calls.length}):</strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)' }}>
+                        <Sparkles size={12} />
+                        <strong>Live ERP Trace ({m.tool_calls.length} queries executed):</strong>
                       </div>
                       {m.tool_calls.map((t, i) => (
                         <div key={i} style={{ paddingLeft: '8px' }}>
-                          <span style={{ color: '#38bdf8' }}>{t.name}</span>
-                          <span style={{ color: 'var(--text-dim)' }}>({JSON.stringify(t.arguments)})</span>
+                          <span style={{ color: '#0284c7' }}>{t.name}</span>
+                          <span style={{ color: 'var(--text-muted)' }}>({JSON.stringify(t.arguments)})</span>
                         </div>
                       ))}
                     </div>
@@ -372,26 +384,26 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '6px',
-                            backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                            color: '#34d399',
-                            border: '1px solid rgba(16, 185, 129, 0.3)',
-                            padding: '6px 12px',
+                            gap: '7px',
+                            backgroundColor: 'var(--badge-ok-bg)',
+                            color: 'var(--badge-ok-text)',
+                            border: '1px solid var(--badge-ok-border)',
+                            padding: '7px 14px',
                             borderRadius: '8px',
-                            fontSize: '0.8rem',
-                            fontWeight: 700,
+                            fontSize: '12.5px',
+                            fontWeight: 600,
                           }}
                         >
-                          <CheckCircle size={14} />
+                          <CheckCircle size={15} />
                           <span>View Created Order #{act.order_number}</span>
-                          <ExternalLink size={12} />
+                          <ExternalLink size={13} />
                         </button>
                       );
                     }
                     return null;
                   })}
 
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)', margin: '0 4px' }}>
+                  <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', margin: '0 4px' }}>
                     {m.timestamp}
                   </span>
                 </div>
@@ -400,9 +412,9 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
           })}
 
           {loading && (
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              <div className="pulse-dot" style={{ backgroundColor: 'var(--primary)', boxShadow: '0 0 10px var(--primary)' }} />
-              <span>Dealer Assistant is querying parts and checking live stock...</span>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', color: 'var(--text-secondary)', fontSize: '12.5px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 8px var(--primary)' }} />
+              <span>Operations Copilot is querying catalogue database & checking stock...</span>
             </div>
           )}
 
@@ -411,26 +423,31 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
 
         {/* Quick Prompts Bar */}
         <div style={{
-          padding: '10px 16px',
-          borderTop: '1px solid var(--border-color)',
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          padding: '10px 18px',
+          borderTop: '1px solid var(--border)',
+          backgroundColor: 'var(--surface-0)',
           display: 'flex',
           gap: '8px',
           overflowX: 'auto',
+          alignItems: 'center',
         }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap', fontWeight: 600 }}>
+            Quick Prompts:
+          </span>
           {quickPrompts.map((q, i) => (
             <button
               key={i}
               onClick={() => handleSendMessage(q)}
               disabled={loading}
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-muted)',
-                padding: '4px 10px',
+                backgroundColor: 'var(--surface-2)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-secondary)',
+                padding: '4px 11px',
                 borderRadius: '6px',
-                fontSize: '0.76rem',
+                fontSize: '11.5px',
                 whiteSpace: 'nowrap',
+                fontWeight: 500,
               }}
             >
               {q}
@@ -440,16 +457,16 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
 
         {/* Input Bar */}
         <div style={{
-          padding: '14px 16px',
-          borderTop: '1px solid var(--border-color)',
-          backgroundColor: 'var(--bg-surface)',
+          padding: '12px 18px',
+          borderTop: '1px solid var(--border)',
+          backgroundColor: 'var(--surface-1)',
           display: 'flex',
-          gap: '12px',
+          gap: '10px',
           alignItems: 'center',
         }}>
           <input
             type="text"
-            placeholder={selectedDealer ? `Ask about parts or place orders for ${selectedDealer.name}...` : 'Select a dealer first...'}
+            placeholder={selectedDealer ? `Ask about parts, stock, or draft orders for ${selectedDealer.name}...` : 'Select a dealer first...'}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -461,12 +478,12 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
             disabled={loading}
             style={{
               flex: 1,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '10px',
-              padding: '12px 16px',
-              color: '#fff',
-              fontSize: '0.92rem',
+              backgroundColor: 'var(--surface-0)',
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              color: 'var(--text-primary)',
+              fontSize: '13px',
             }}
           />
 
@@ -476,37 +493,34 @@ export const AssistantChatView: React.FC<AssistantChatViewProps> = ({
             onClick={toggleVoiceRecording}
             title={isListening ? "Listening... Click to stop recording" : "Click to speak with voice"}
             style={{
-              backgroundColor: isListening ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+              backgroundColor: isListening ? 'rgba(239, 68, 68, 0.2)' : 'var(--surface-0)',
               color: isListening ? '#f87171' : 'var(--text-secondary)',
-              border: isListening ? '1px solid #ef4444' : '1px solid var(--border-color)',
-              padding: '12px 14px',
-              borderRadius: '10px',
+              border: isListening ? '1px solid #ef4444' : '1px solid var(--border)',
+              padding: '10px 13px',
+              borderRadius: '8px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'all 0.2s ease',
+              boxShadow: isListening ? '0 0 10px rgba(239, 68, 68, 0.3)' : 'none',
             }}
           >
-            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+            {isListening ? <MicOff size={16} /> : <Mic size={16} />}
           </button>
 
           <button
             onClick={() => handleSendMessage()}
             disabled={loading || !input.trim()}
+            className="btn"
             style={{
-              backgroundColor: input.trim() ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)',
-              color: input.trim() ? '#000' : 'var(--text-dim)',
-              border: 'none',
-              padding: '12px 18px',
-              borderRadius: '10px',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
+              padding: '10px 18px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              opacity: (!input.trim() || loading) ? 0.45 : 1,
+              cursor: (!input.trim() || loading) ? 'not-allowed' : 'pointer',
             }}
           >
-            <Send size={16} />
+            <Send size={15} />
             <span>Send</span>
           </button>
         </div>

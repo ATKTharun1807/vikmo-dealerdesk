@@ -292,7 +292,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
           {/* Left Column: Stock Levels */}
           <div className="card" style={{ padding: '14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-              <span style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>Stock levels</span>
+              <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>Stock levels</span>
               <div className="input" style={{ height: '32px', width: '160px', fontSize: '12px' }}>
                 <Search size={13} color="var(--text-muted)" />
                 <input
@@ -341,7 +341,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
                           <td>
                             <span className="sku">{p.sku}</span>
                           </td>
-                          <td style={{ fontWeight: 500, color: '#fff' }}>{p.name}</td>
+                          <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{p.name}</td>
                           <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{p.stock}</td>
                           <td>
                             <span className={`badge ${statusClass}`}>{statusText}</span>
@@ -440,7 +440,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
 
           {/* Right Column: Dispatch Queue */}
           <div className="card" style={{ padding: '14px' }}>
-            <div style={{ fontWeight: 600, fontSize: '14px', color: '#fff', marginBottom: '12px' }}>
+            <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)', marginBottom: '12px' }}>
               Dispatch queue
             </div>
             {whOrders.filter((o) => o.status === 'CONFIRMED' || o.status === 'DISPATCHED').length === 0 ? (
@@ -455,7 +455,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
                 .map((ord) => (
                   <div key={ord.order_number} style={{ padding: '10px 0', borderTop: '1px solid var(--border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 600, color: '#fff', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontSize: '12.5px' }}>
                         {ord.order_number}
                       </span>
                       <span className={`badge ${ord.status === 'CONFIRMED' ? 'info' : 'low'}`}>
@@ -527,7 +527,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
             padding: '16px',
           }}>
             <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '20px', background: 'var(--surface-1)' }}>
-              <div style={{ fontWeight: 600, fontSize: '15px', color: '#fff', marginBottom: '2px' }}>
+              <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--text-primary)', marginBottom: '2px' }}>
                 Audit Stock: {adjustModalProduct.sku}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '14px' }}>
@@ -753,7 +753,7 @@ export const CatalogueView: React.FC<CatalogueViewProps> = ({
                   </div>
 
                   {/* Title & Brand */}
-                  <div style={{ fontWeight: 600, fontSize: '14.5px', color: '#fff', lineHeight: 1.35 }}>
+                  <div style={{ fontWeight: 600, fontSize: '14.5px', color: 'var(--text-primary)', lineHeight: 1.35 }}>
                     {p.name}
                   </div>
                   <div style={{ color: 'var(--text-secondary)', margin: '4px 0 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
