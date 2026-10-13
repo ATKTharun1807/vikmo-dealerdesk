@@ -96,8 +96,13 @@ All 8 technical questions with file and line number citations are documented in 
 
 ## 5. 5-Minute Video Walkthrough
 
-- **Link:** `[Link to be added before final submission]`
-- **Content Covered:**
-  1. High-level architecture and relational model design.
-  2. The Order Confirm flow from incoming HTTP request to PostgreSQL row-level locks line-by-line.
-  3. Demonstration of passing tests and smoke test results.
+- **Full Script & Teleprompter Guide:** [VIDEO_WALKTHROUGH_SCRIPT.md](file:///d:/MAIN%20PROJECT/VIKMO_DealerDesk_Assignment%20%281%29/VIKMO%20DealerDesk%20Assignment/VIDEO_WALKTHROUGH_SCRIPT.md)
+- **Video Link:** `[Add link here before submission]`
+- **Content Covered (300 Seconds):**
+  1. **[0:00–0:35]** System Architecture & B2B Mission (100% Django REST Framework + PostgreSQL).
+  2. **[0:35–1:35]** Concurrency Engine (`select_for_update()`), Exact GST `Decimal` rounding, and Idempotency.
+  3. **[1:35–2:30]** Resilient Supplier Sync (cursor pagination, 429/5xx retry, all-or-nothing rollback).
+  4. **[2:30–3:30]** Demand Forecasting & Safety Stock ($SS = \lceil 1.65 \times \sigma \times \sqrt{L} \rceil$) with live working progress meters and Django batch procurement.
+  5. **[3:30–4:25]** AI Operations Copilot (tool calling, prompt injection defense) and instant-switching Distributor Console.
+  6. **[4:25–5:00]** Verification: 7/7 Django unit & concurrency test suite pass.
+
