@@ -97,7 +97,7 @@ All 8 technical questions with file and line number citations are documented in 
 ## 5. 5-Minute Video Walkthrough
 
 - **Full Script & Teleprompter Guide:** [VIDEO_WALKTHROUGH_SCRIPT.md](file:///d:/MAIN%20PROJECT/VIKMO_DealerDesk_Assignment%20%281%29/VIKMO%20DealerDesk%20Assignment/VIDEO_WALKTHROUGH_SCRIPT.md)
-- **Video Link:** `[Add link here before submission]`
+- **Video Link:** https://drive.google.com/file/d/1EIgpPlAaP8qc19deWjIpmr_UjhQPIxeH/view?usp=sharing
 - **Content Covered (300 Seconds):**
   1. **[0:00–0:35]** System Architecture & B2B Mission (100% Django REST Framework + PostgreSQL).
   2. **[0:35–1:35]** Concurrency Engine (`select_for_update()`), Exact GST `Decimal` rounding, and Idempotency.
